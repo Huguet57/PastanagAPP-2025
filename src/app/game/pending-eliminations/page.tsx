@@ -227,12 +227,12 @@ export default function PendingEliminationsPage() {
                           <div className="mx-auto text-center space-y-4">
                             <p className="text-sm font-medium text-muted-foreground mb-6">Assassí:</p>
                             <div className="relative inline-block mb-6">
-                              <Avatar className="h-28 w-28 mx-auto ring-4 ring-red-400 ring-offset-4">
+                              <Avatar className="h-28 w-28 mx-auto ring-4 ring-red-400 ring-offset-4 rounded-lg">
                                 <AvatarImage 
                                   src={elimination.eliminator.photo || undefined} 
                                   className="object-cover"
                                 />
-                                <AvatarFallback className="bg-gradient-to-br from-red-400 to-red-600 text-white text-3xl font-bold">
+                                <AvatarFallback className="bg-gradient-to-br from-red-400 to-red-600 text-white text-3xl font-bold rounded-lg">
                                   {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -252,25 +252,27 @@ export default function PendingEliminationsPage() {
                         // Organizer view - show both victim and killer
                         <div className="space-y-6">
                           <div className="flex items-center gap-4 mb-6">
-                            {/* Victim */}
-                            <div className="flex-1 text-center space-y-3">
-                              <Avatar className="h-20 w-20 mx-auto ring-2 ring-red-300 ring-offset-2">
-                                <AvatarImage 
-                                  src={elimination.victim.photo || undefined} 
-                                  className="object-cover"
-                                />
-                                <AvatarFallback className="bg-gradient-to-br from-red-400 to-red-600 text-white font-bold">
-                                  {elimination.victim.nickname.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="space-y-1">
-                                <p className="font-semibold text-sm">{elimination.victim.nickname}</p>
-                                <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
+                            {/* Only show killer if organizer */}
+                            {isOrganizer && (
+                              <div className="flex-1 text-center space-y-3">
+                                <Avatar className="h-20 w-20 mx-auto ring-2 ring-green-400 ring-offset-2 rounded-lg">
+                                  <AvatarImage 
+                                    src={elimination.eliminator.photo || undefined} 
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-700 text-white font-bold rounded-lg">
+                                    {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-sm">{elimination.eliminator.nickname}</p>
+                                  <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
+                                </div>
+                                <Badge className="text-xs px-3 py-1 bg-green-600 hover:bg-green-700 border-0">
+                                  Assassí
+                                </Badge>
                               </div>
-                              <Badge variant="destructive" className="text-xs px-3 py-1">
-                                Víctima
-                              </Badge>
-                            </div>
+                            )}
 
                             {/* Arrow or Signature */}
                             <div className="flex flex-col items-center justify-center px-2">
@@ -286,27 +288,25 @@ export default function PendingEliminationsPage() {
                               )}
                             </div>
 
-                            {/* Only show killer if organizer */}
-                            {isOrganizer && (
-                              <div className="flex-1 text-center space-y-3">
-                                <Avatar className="h-20 w-20 mx-auto ring-2 ring-green-400 ring-offset-2">
-                                  <AvatarImage 
-                                    src={elimination.eliminator.photo || undefined} 
-                                    className="object-cover"
-                                  />
-                                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-700 text-white font-bold">
-                                    {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="space-y-1">
-                                  <p className="font-semibold text-sm">{elimination.eliminator.nickname}</p>
-                                  <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
-                                </div>
-                                <Badge className="text-xs px-3 py-1 bg-green-600 hover:bg-green-700 border-0">
-                                  Assassí
-                                </Badge>
+                            {/* Victim */}
+                            <div className="flex-1 text-center space-y-3">
+                              <Avatar className="h-20 w-20 mx-auto ring-2 ring-red-300 ring-offset-2 rounded-lg">
+                                <AvatarImage 
+                                  src={elimination.victim.photo || undefined} 
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="bg-gradient-to-br from-red-400 to-red-600 text-white font-bold rounded-lg">
+                                  {elimination.victim.nickname.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="space-y-1">
+                                <p className="font-semibold text-sm">{elimination.victim.nickname}</p>
+                                <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
                               </div>
-                            )}
+                              <Badge variant="destructive" className="text-xs px-3 py-1">
+                                Víctima
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       )}
