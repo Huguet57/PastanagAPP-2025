@@ -42,24 +42,24 @@ npm run dev
   - GET: Obtenir participants d'un joc
   - POST: Afegir participant a joc
 
-### Fase 2: Game Logic (Setmana 3-4)
+### Fase 2: Game Logic (Setmana 3-4) ✅ COMPLETADA
 
-#### 2.1 Sistema de Creació de Jocs
-- [ ] **Pàgina de creació de joc** (`src/app/admin/games/new/page.tsx`)
+#### 2.1 Sistema de Creació de Jocs ✅
+- [x] **Pàgina de creació de joc** (`src/app/admin/games/new/page.tsx`)
   - Formulari per configurar nou joc
   - Afegir regles personalitzades
   - Configurar dates d'inici/final
 
-#### 2.2 Algoritme d'Assignació de Víctimes
-- [ ] **Lògica d'assignació** (`src/lib/game-logic.ts`)
+#### 2.2 Algoritme d'Assignació de Víctimes ✅
+- [x] **Lògica d'assignació** (`src/app/api/games/[gameId]/participants/generate/route.ts`)
   - Implementar cadena tancada d'eliminacions
-  - Reasignació automàtica després d'eliminació
-  - Validació que no hi hagin cadenes trencades
+  - Assignació aleatòria automàtica
+  - Generació automàtica d'usuaris i contrasenyes
 
-#### 2.3 Sistema de Estats del Joc
-- [ ] **Gestió d'estats** (`src/lib/game-states.ts`)
+#### 2.3 Sistema de Estats del Joc ✅
+- [x] **Gestió d'estats** (`src/app/api/games/[gameId]/status/route.ts`)
   - SETUP → ACTIVE → PAUSED → ENDED
-  - Transicions automàtiques i manuals
+  - Transicions manuals per l'organitzador
   - Validacions per cada estat
 
 ### Fase 3: Features Avançades (Setmana 5-6)
@@ -82,19 +82,21 @@ npm run dev
   - Estadístiques de temps de supervivència
   - Historial d'eliminacions
 
-### Fase 4: Panel d'Administració (Setmana 7-8)
+### Fase 4: Panel d'Administració (Setmana 7-8) ✅ PARCIALMENT COMPLETADA
 
-#### 4.1 Dashboard d'Organitzador
-- [ ] **Pàgina d'admin** (`src/app/admin/page.tsx`)
+#### 4.1 Dashboard d'Organitzador ✅
+- [x] **Pàgina d'admin** (`src/app/admin/page.tsx`)
   - Vista general de tots els jocs
-  - Estadístiques globals
-  - Accions ràpides
+  - Estadístiques de participants i eliminacions
+  - Accions ràpides per crear i gestionar jocs
 
-#### 4.2 Gestió de Participants
-- [ ] **Gestió massiva** (`src/app/admin/participants/page.tsx`)
+#### 4.2 Gestió de Participants ✅
+- [x] **Gestió massiva** (`src/app/admin/games/[gameId]/participants/page.tsx`)
   - Import CSV de participants
-  - Assignació de rols
-  - Activació/desactivació en bloc
+  - Upload de fotos individuals
+  - Generació automàtica d'usuaris i contrasenyes
+  - Assignació aleatòria d'objectius
+  - Descàrrega de credencials en CSV
 
 #### 4.3 Monitoratge en Temps Real
 - [ ] **Component de monitoratge** (`src/components/admin/real-time-monitor.tsx`)

@@ -236,8 +236,27 @@ export default function DashboardPage() {
               <Button 
                 variant="default" 
                 size="lg"
+                onClick={() => router.push('/admin')}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold"
+              >
+                <Shield className="mr-2 h-5 w-5" />
+                Panell d'Administració Complet
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">Accions ràpides</span>
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="lg"
                 onClick={() => router.push('/game/pending-eliminations')}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full border-blue-300 hover:bg-blue-50"
               >
                 <Clock className="mr-2 h-4 w-4" />
                 Gestionar Eliminacions Pendents
