@@ -123,9 +123,9 @@ export default function CemeteryPage() {
                     <div className="flex items-start gap-3">
                       {/* Victim Avatar */}
                       <div className="flex flex-col items-center">
-                        <Avatar className="h-20 w-20 grayscale opacity-80 border-2 border-gray-300">
+                        <Avatar className="h-20 w-20 grayscale opacity-80 border-2 border-gray-300 rounded-lg">
                           <AvatarImage src={elimination.victim.photo || undefined} />
-                          <AvatarFallback className="bg-gray-200 text-gray-500 text-xl">
+                          <AvatarFallback className="bg-gray-200 text-gray-500 text-xl rounded-lg">
                             {elimination.victim.nickname.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -159,9 +159,9 @@ export default function CemeteryPage() {
 
                       {/* Killer Avatar */}
                       <div className="flex flex-col items-center">
-                        <Avatar className="h-20 w-20 border-2 border-green-400">
+                        <Avatar className="h-20 w-20 border-2 border-green-400 rounded-lg">
                           <AvatarImage src={elimination.eliminator.photo || undefined} />
-                          <AvatarFallback className="bg-green-100 text-green-700 text-xl">
+                          <AvatarFallback className="bg-green-100 text-green-700 text-xl rounded-lg">
                             {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>

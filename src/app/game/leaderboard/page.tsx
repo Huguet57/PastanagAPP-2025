@@ -142,14 +142,14 @@ export default function LeaderboardPage() {
 
                         {/* Player Avatar and Info */}
                         <div className="relative">
-                          <Avatar className={`h-16 w-16 border-2 ${
+                          <Avatar className={`h-16 w-16 border-2 rounded-lg ${
                             entry.status === 'ELIMINATED' ? 'opacity-50 grayscale border-gray-300' : 
                             entry.position === 1 ? 'border-yellow-400' :
                             entry.position === 2 ? 'border-gray-400' :
                             entry.position === 3 ? 'border-orange-400' : 'border-gray-200'
                           }`}>
                             <AvatarImage src={entry.photo || undefined} />
-                            <AvatarFallback className={`text-xl ${
+                            <AvatarFallback className={`text-xl rounded-lg ${
                               entry.status === 'ELIMINATED' ? 'bg-gray-100 text-gray-400' : 
                               'bg-orange-100 text-orange-600'
                             }`}>

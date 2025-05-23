@@ -171,9 +171,9 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="text-center space-y-4">
-                  <Avatar className="h-32 w-32 mx-auto border-4 border-orange-300 shadow-xl">
+                  <Avatar className="h-32 w-32 mx-auto border-4 border-orange-300 shadow-xl rounded-lg">
                     <AvatarImage src={participantInfo.target.photo || undefined} />
-                    <AvatarFallback className="text-4xl bg-orange-100 text-orange-600">
+                    <AvatarFallback className="text-4xl bg-orange-100 text-orange-600 rounded-lg">
                       {participantInfo.target.nickname.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
