@@ -402,7 +402,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="font-semibold">T'han eliminat!</p>
                       <p className="text-sm text-muted-foreground">
-                        Tens {participantInfo.pendingEliminations} eliminació pendent de confirmar
+                        Confirma que t'han eliminat ara
                       </p>
                     </div>
                   </div>
