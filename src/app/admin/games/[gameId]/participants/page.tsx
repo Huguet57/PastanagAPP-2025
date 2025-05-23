@@ -10,13 +10,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Upload, Users, Shuffle, Download, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PhotoUpload } from '@/components/ui/photo-upload'
 
 interface Participant {
   id?: string
   name: string
   group: string
   email?: string
-  photo?: string
+  photo?: string | null
 }
 
 export default function ParticipantsPage() {
@@ -95,16 +96,10 @@ export default function ParticipantsPage() {
     reader.readAsText(file)
   }
 
-  const handlePhotoUpload = async (index: number, file: File) => {
-    // Convert file to base64
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string
-      const updatedParticipants = [...participants]
-      updatedParticipants[index].photo = base64
-      setParticipants(updatedParticipants)
-    }
-    reader.readAsDataURL(file)
+  const handlePhotoChange = (index: number, photo: string | null) => {
+    const updatedParticipants = [...participants]
+    updatedParticipants[index].photo = photo
+    setParticipants(updatedParticipants)
   }
 
   const addParticipant = () => {
@@ -238,32 +233,13 @@ export default function ParticipantsPage() {
               {participants.map((participant, index) => (
                 <div key={index} className="flex gap-4 items-start p-4 border rounded-lg">
                   <div className="flex-shrink-0">
-                    {participant.photo ? (
-                      <img
-                        src={participant.photo}
-                        alt={participant.name}
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                        <Users className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-                    <Label htmlFor={`photo-${index}`} className="cursor-pointer">
-                      <div className="text-xs text-center mt-1 text-blue-600 hover:underline">
-                        Canviar
-                      </div>
-                      <Input
-                        id={`photo-${index}`}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) handlePhotoUpload(index, file)
-                        }}
-                      />
-                    </Label>
+                    <PhotoUpload
+                      currentPhoto={participant.photo}
+                      fallbackText={participant.name || `P${index + 1}`}
+                      onPhotoChange={(photo) => handlePhotoChange(index, photo)}
+                      size="sm"
+                      showRemoveButton={true}
+                    />
                   </div>
 
                   <div className="flex-1 grid grid-cols-2 gap-4">
