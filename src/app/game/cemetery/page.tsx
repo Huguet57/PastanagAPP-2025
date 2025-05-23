@@ -122,9 +122,6 @@ export default function CemeteryPage() {
                       <div className="flex-grow">
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-lg">{elimination.victim.nickname}</h3>
-                          <Badge variant="destructive" className="text-xs">
-                            † RIP
-                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{elimination.victim.group}</p>
                         <p className="text-xs text-muted-foreground mt-1">

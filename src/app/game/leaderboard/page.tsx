@@ -167,18 +167,14 @@ export default function LeaderboardPage() {
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">{entry.group}</p>
-                          <Badge 
-                            variant={entry.status === 'ALIVE' ? 'default' : 
-                                    entry.status === 'WINNER' ? 'secondary' : 'destructive'}
-                            className={`mt-1 text-xs ${
-                              entry.status === 'ALIVE' ? 'bg-green-500 border-0' : 
-                              entry.status === 'WINNER' ? 'bg-yellow-500 text-black border-0' : 
-                              'bg-red-500 border-0'
-                            }`}
-                          >
-                            {entry.status === 'ALIVE' ? 'VIU' : 
-                             entry.status === 'WINNER' ? '👑' : 'ELIMINAT'}
-                          </Badge>
+                          {entry.status === 'ELIMINATED' && (
+                            <Badge 
+                              variant="destructive"
+                              className="mt-1 text-xs bg-red-500 border-0"
+                            >
+                              RIP
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
