@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("PLAYER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Game-related fields
+  participants Participant[]
+  accounts     Account[]
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String     @default("SETUP")
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  participants Participant[]
+  eliminations Elimination[]
+  rules        GameRule[]
+
+  @@map("games")
+}
+
+model Participant {
+  id       String @id @default(cuid())
+  gameId   String
+  userId   String
+  nickname String
+  course   String? // e.g., "3r - MAT"
+  photo    String?
+  signature String? // Base64 encoded signature
+  status   String            @default("ALIVE")
+  targetId String? // Who this participant needs to eliminate
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  target Participant? @relation("Target", fields: [targetId], references: [id])
+  hunters Participant[] @relation("Target")
+  
+  eliminations Elimination[] @relation("Eliminator")
+  eliminated   Elimination[] @relation("Victim")
+
+  @@unique([gameId, userId])
+  @@map("participants")
+}
+
+model Elimination {
+  id            String   @id @default(cuid())
+  gameId        String
+  eliminatorId  String
+  victimId      String
+  timestamp     DateTime @default(now())
+  location      String?
+  method        String?  // How the elimination happened
+  witnesses     String?  // JSON array of witness names
+  confirmed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  game       Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  eliminator Participant @relation("Eliminator", fields: [eliminatorId], references: [id])
+  victim     Participant @relation("Victim", fields: [victimId], references: [id])
+
+  @@map("eliminations")
+}
+
+model GameRule {
+  id          String @id @default(cuid())
+  gameId      String
+  title       String
+  description String
+  order       Int    @default(0)
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@map("game_rules")
+}
+
+// Enum values as constants (can be used in TypeScript)
+// Role: "ADMIN" | "ORGANIZER" | "PLAYER"
+// GameStatus: "SETUP" | "ACTIVE" | "PAUSED" | "ENDED"  
+// ParticipantStatus: "ALIVE" | "ELIMINATED" | "WINNER" 
