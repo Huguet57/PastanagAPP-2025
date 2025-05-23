@@ -106,6 +106,14 @@ export default function DashboardPage() {
         if (!gamesResponse.ok) {
           const errorData = await gamesResponse.json();
           console.error('❌ Active game error:', errorData);
+          
+          // If there's no active game, log out the user
+          if (gamesResponse.status === 404 && errorData.error?.includes('No hi ha cap joc actiu')) {
+            console.log('🚪 No active game found, logging out user...');
+            await signOut({ callbackUrl: '/auth/signin' });
+            return;
+          }
+          
           throw new Error(errorData.error || 'No hi ha cap joc actiu en aquest moment');
         }
         
@@ -310,6 +318,23 @@ export default function DashboardPage() {
   }
 
   if (error) {
+    // Check if the error is about no active game
+    if (error.includes('No hi ha cap joc actiu')) {
+      // Log out the user
+      signOut({ callbackUrl: '/auth/signin' });
+      return (
+        <div className="container mx-auto py-10 px-4">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Redirigint...</AlertTitle>
+            <AlertDescription>
+              No hi ha cap joc actiu. Redirigint a la pàgina d'inici de sessió...
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
+    
     return (
       <div className="container mx-auto py-10 px-4">
         <Alert variant="destructive">
@@ -322,13 +347,16 @@ export default function DashboardPage() {
   }
 
   if (!gameInfo || !participantInfo) {
+    // This should not happen as we log out when there's no active game
+    // But just in case, log out here too
+    signOut({ callbackUrl: '/auth/signin' });
     return (
       <div className="container mx-auto py-10 px-4">
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Sense joc actiu</AlertTitle>
+          <AlertTitle>Redirigint...</AlertTitle>
           <AlertDescription>
-            No hi ha cap joc actiu en aquest moment. Contacta amb els organitzadors.
+            Redirigint a la pàgina d'inici de sessió...
           </AlertDescription>
         </Alert>
       </div>
