@@ -402,7 +402,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="font-semibold">T'han eliminat!</p>
                       <p className="text-sm text-muted-foreground">
-                        Confirma que t'han eliminat ara
+                        Confirma que t'han eliminat
                       </p>
                     </div>
                   </div>
@@ -439,16 +439,6 @@ export default function DashboardPage() {
                     <p className="text-2xl font-bold">{participantInfo.target.nickname}</p>
                     <p className="text-muted-foreground">{participantInfo.target.group}</p>
                   </div>
-                  
-                  {/* Warning if target has pending elimination */}
-                  {participantInfo.targetHasPendingElimination && (
-                    <Alert className="border-orange-300 bg-orange-50">
-                      <Clock className="h-4 w-4 text-orange-600" />
-                      <AlertDescription className="text-sm">
-                        Aquesta víctima ja té una eliminació pendent de confirmar
-                      </AlertDescription>
-                    </Alert>
-                  )}
                   
                   <Button 
                     size="lg" 
