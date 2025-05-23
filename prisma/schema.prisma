@@ -79,7 +79,7 @@ model Participant {
   gameId   String
   userId   String
   nickname String
-  course   String? // e.g., "3r - MAT"
+  group    String? // e.g., "3r - MAT"
   photo    String?
   signature String? // Base64 encoded signature
   status   String            @default("ALIVE")

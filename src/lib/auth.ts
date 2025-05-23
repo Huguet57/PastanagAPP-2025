@@ -2,10 +2,10 @@ import { NextAuthOptions } from 'next-auth'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { db } from './db'
+import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db),
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await db.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
             email: credentials.email
           }
@@ -37,6 +37,13 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        console.log('🔐 Authorization successful, returning user:', {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        });
+
         return {
           id: user.id,
           email: user.email,
@@ -51,16 +58,27 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      console.log('🎫 JWT callback - token before:', token);
+      console.log('🎫 JWT callback - user:', user);
+      
       if (user) {
+        token.id = user.id
         token.role = user.role
       }
+      
+      console.log('🎫 JWT callback - token after:', token);
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub!
+      console.log('📦 Session callback - session before:', session);
+      console.log('📦 Session callback - token:', token);
+      
+      if (token && session.user) {
+        session.user.id = token.id as string
         session.user.role = token.role as string
       }
+      
+      console.log('📦 Session callback - session after:', session);
       return session
     }
   },
