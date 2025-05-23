@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Target, Trophy, Skull, Clock } from 'lucide-react';
+import { AlertCircle, Target, Trophy, Skull, Clock, LogOut, UserX } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface GameInfo {
@@ -47,6 +48,7 @@ export default function DashboardPage() {
   const [gameInfo, setGameInfo] = useState<GameInfo | null>(null);
   const [participantInfo, setParticipantInfo] = useState<ParticipantInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notParticipant, setNotParticipant] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -71,6 +73,7 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         setError(null);
+        setNotParticipant(false);
 
         // Fetch active game
         console.log('📡 Fetching active game...');
@@ -95,7 +98,15 @@ export default function DashboardPage() {
         if (!participantResponse.ok) {
           const errorData = await participantResponse.json();
           console.error('❌ Participant error:', errorData);
-          throw new Error(errorData.error || 'No estàs participant en aquest joc');
+          
+          // Check if the error is specifically about not being a participant
+          if (participantResponse.status === 404 || errorData.error?.includes('participant')) {
+            setNotParticipant(true);
+            setLoading(false);
+            return;
+          }
+          
+          throw new Error(errorData.error || 'Error carregant la informació');
         }
         
         const participant = await participantResponse.json();
@@ -136,6 +147,47 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
+  // Handle case where user is not a participant
+  if (notParticipant) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-2 border-orange-200">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-orange-100 flex items-center justify-center">
+              <UserX className="h-10 w-10 text-orange-500" />
+            </div>
+            <CardTitle className="text-2xl">No ets participant</CardTitle>
+            <CardDescription className="text-base mt-2">
+              No estàs inscrit en el joc actiu de Pastanaga Assassina
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center text-sm text-muted-foreground">
+              <p>Has iniciat sessió com:</p>
+              <p className="font-semibold">{session?.user?.email}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+                className="w-full border-orange-300 hover:bg-orange-50"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Tancar sessió
+              </Button>
+              
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                Si creus que això és un error, contacta amb els organitzadors del joc.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="container mx-auto py-10 px-4">
@@ -171,6 +223,19 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
       <div className="container mx-auto py-6 px-4 max-w-md">
         <div className="space-y-6">
+          {/* Header with logout button */}
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sortir
+            </Button>
+          </div>
+
           {/* Simple Greeting */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-800">

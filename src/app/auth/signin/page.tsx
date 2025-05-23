@@ -137,7 +137,7 @@ export default function SignInPage() {
                   Entrant...
                 </span>
               ) : (
-                'Entrar al joc 🎮'
+                'Entra al joc'
               )}
             </button>
           </form>

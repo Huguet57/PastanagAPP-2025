@@ -50,7 +50,7 @@ export default function EliminationPage() {
         
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || 'Error verificant la víctima');
+          throw new Error(errorData.message || errorData.error || 'Error verificant la víctima');
         }
 
         const target = await response.json();
