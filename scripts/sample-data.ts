@@ -10,6 +10,32 @@ const SAMPLE_SIGNATURES = [
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 ];
 
+// Servei per generar avatars únics
+function getAvatarUrl(name: string, group: string): string {
+  // Utilitzem diferents serveis d'avatars per varietat
+  const services = [
+    // DiceBear Avatars - estil "lorelei"
+    (name: string) => `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name)}&backgroundColor=ffdfba,ffd5dc,d1d4f9,c0aede,b6e3f4`,
+    // DiceBear Avatars - estil "adventurer"
+    (name: string) => `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}&backgroundColor=ffdfba,ffd5dc,d1d4f9`,
+    // DiceBear Avatars - estil "fun-emoji"
+    (name: string) => `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${encodeURIComponent(name)}`,
+    // DiceBear Avatars - estil "avataaars"
+    (name: string) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}&backgroundColor=ffdfba,ffd5dc`,
+    // UI Avatars - amb les inicials
+    (name: string) => {
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+      const colors = ['f59e32', 'e66b06', '22c55e', '3b82f6', 'a855f7', 'ef4444'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=200&bold=true`;
+    }
+  ];
+
+  // Seleccionar un servei basat en el grup per mantenir consistència
+  const groupIndex = group.charCodeAt(0) % services.length;
+  return services[groupIndex](name);
+}
+
 async function main() {
   console.log('🎮 Creating sample game data...');
 
@@ -113,6 +139,7 @@ async function main() {
           userId: user.id,
           nickname: players[index].nickname,
           group: players[index].group,
+          photo: getAvatarUrl(user.name, players[index].group),
           status: 'ALIVE' // We'll update some to ELIMINATED later
         }
       })
