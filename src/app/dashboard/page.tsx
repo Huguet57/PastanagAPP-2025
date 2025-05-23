@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Target, Trophy, Skull, Clock, LogOut, UserX, Shield, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertCircle, Target, Trophy, Skull, Clock, LogOut, UserX, Shield } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ParticipantProfile } from '@/components/game/participant-profile';
 
 interface GameInfo {
   id: string;
@@ -52,19 +51,12 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [notParticipant, setNotParticipant] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin');
     }
   }, [status, router]);
-
-  const handleProfileUpdate = (updatedFields: Partial<ParticipantInfo>) => {
-    if (participantInfo) {
-      setParticipantInfo({ ...participantInfo, ...updatedFields });
-    }
-  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -444,44 +436,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           ) : null }
-
-          {/* Profile Toggle Button */}
-          <Card className="border-2 border-orange-200 hover:border-orange-300 transition-colors">
-            <CardContent className="p-0">
-              <Button
-                variant="ghost"
-                onClick={() => setShowProfile(!showProfile)}
-                className="w-full flex items-center justify-between p-4 h-auto hover:bg-orange-50 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                    <User className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <div className="text-left">
-                    <span className="font-semibold text-gray-800">El teu perfil</span>
-                    <p className="text-sm text-gray-500">Veure i editar informació</p>
-                  </div>
-                </div>
-                <div className="transition-transform duration-200" style={{ transform: showProfile ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <ChevronDown className="h-5 w-5 text-gray-500" />
-                </div>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Participant Profile (Collapsible with Animation) */}
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showProfile ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            {showProfile && (
-              <ParticipantProfile
-                participant={participantInfo}
-                gameId={gameInfo.id}
-                onProfileUpdate={handleProfileUpdate}
-                showPhotoEdit={isAlive} // Only allow photo editing if alive
-              />
-            )}
-          </div>
 
           {/* Target Card - More visual and fun */}
           {isAlive && participantInfo.target && (
