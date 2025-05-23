@@ -185,8 +185,8 @@ export async function GET(request: NextRequest) {
             userId: true
           }
         },
-        // Include eliminator info only for pending eliminations and if user is organizer
-        ...(confirmed === 'false' && (user?.role === 'ADMIN' || user?.role === 'ORGANIZER') ? {
+        // Always include eliminator info for pending eliminations
+        ...(confirmed === 'false' ? {
           eliminator: {
             select: {
               id: true,

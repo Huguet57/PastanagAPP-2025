@@ -172,11 +172,13 @@ export default function PendingEliminationsPage() {
             </Button>
             <h1 className="text-3xl font-bold flex items-center gap-3 justify-center">
               <Clock className="h-8 w-8 text-orange-600" />
-              Eliminacions Pendents
+              {isOrganizer ? 'Eliminacions Pendents' : 'Confirmar Eliminació'}
             </h1>
-            <p className="text-muted-foreground text-center text-sm mt-2">
-              {pendingEliminations.length} {pendingEliminations.length === 1 ? 'eliminació pendent' : 'eliminacions pendents'}
-            </p>
+            {isOrganizer && (
+              <p className="text-muted-foreground text-center text-sm mt-2">
+                {pendingEliminations.length} {pendingEliminations.length === 1 ? 'eliminació pendent' : 'eliminacions pendents'}
+              </p>
+            )}
           </div>
 
           {pendingEliminations.length === 0 ? (
@@ -195,7 +197,7 @@ export default function PendingEliminationsPage() {
                     key={elimination.id} 
                     className={`overflow-hidden border-2 ${isVictim ? 'border-red-400' : 'border-orange-300'}`}
                   >
-                    <CardHeader className={`${isVictim ? 'bg-red-50' : 'bg-orange-50'} pb-3`}>
+                    <CardHeader className={`${isVictim ? 'bg-red-50' : 'bg-orange-50'} pb-4`}>
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className={`${isVictim ? 'border-red-400 text-red-600' : 'border-orange-400 text-orange-600'}`}>
                           {isVictim ? 'T\'han eliminat!' : 'Pendent de confirmació'}
@@ -210,97 +212,129 @@ export default function PendingEliminationsPage() {
                         </p>
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-4">
+                    <CardContent className="pt-6 pb-6 px-6">
                       {isVictim ? (
-                        // Victim view - show assassin's signature
-                        <div className="space-y-4">
+                        // Victim view - show assassin's identity
+                        <div className="space-y-6">
                           <div className="text-center">
-                            <p className="text-lg font-semibold mb-2">Has estat eliminat!</p>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Confirma la teva eliminació per continuar el joc
+                            <p className="text-xl font-bold mb-3">Has estat eliminat!</p>
+                            <p className="text-sm text-muted-foreground mb-8">
+                              Confirma si aquesta persona t'ha eliminat
                             </p>
                           </div>
                           
-                          {/* Assassin's signature */}
-                          {elimination.killerSignature && (
-                            <div className="mx-auto">
-                              <p className="text-sm text-muted-foreground text-center mb-2">Signatura de l'assassí:</p>
-                              <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-3 mx-auto max-w-xs">
-                                <img 
-                                  src={elimination.killerSignature} 
-                                  alt="Signatura de l'assassí"
-                                  className="max-h-24 max-w-full object-contain mx-auto"
+                          {/* Assassin's identity */}
+                          <div className="mx-auto text-center space-y-4">
+                            <p className="text-sm font-medium text-muted-foreground mb-6">Assassí:</p>
+                            <div className="relative inline-block mb-6">
+                              <Avatar className="h-28 w-28 mx-auto ring-4 ring-red-400 ring-offset-4">
+                                <AvatarImage 
+                                  src={elimination.eliminator.photo || undefined} 
+                                  className="object-cover"
                                 />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        // Organizer view - show both victim and killer
-                        <div className="flex items-center gap-3 mb-4">
-                          {/* Victim */}
-                          <div className="flex-1 text-center">
-                            <Avatar className="h-16 w-16 mx-auto mb-2 border-2 border-red-300">
-                              <AvatarImage src={elimination.victim.photo || undefined} />
-                              <AvatarFallback className="bg-red-100 text-red-600">
-                                {elimination.victim.nickname.slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <p className="font-semibold">{elimination.victim.nickname}</p>
-                            <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
-                            <Badge variant="destructive" className="mt-1 text-xs">
-                              Víctima
-                            </Badge>
-                          </div>
-
-                          {/* Signature */}
-                          {elimination.killerSignature && (
-                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-2 w-24 h-16 flex items-center justify-center">
-                              <img 
-                                src={elimination.killerSignature} 
-                                alt="Signatura de l'assassí"
-                                className="max-h-full max-w-full object-contain"
-                              />
-                            </div>
-                          )}
-
-                          {/* Only show killer if organizer */}
-                          {isOrganizer && (
-                            <div className="flex-1 text-center">
-                              <Avatar className="h-16 w-16 mx-auto mb-2 border-2 border-green-300">
-                                <AvatarImage src={elimination.eliminator.photo || undefined} />
-                                <AvatarFallback className="bg-green-100 text-green-600">
+                                <AvatarFallback className="bg-gradient-to-br from-red-400 to-red-600 text-white text-3xl font-bold">
                                   {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
-                              <p className="font-semibold">{elimination.eliminator.nickname}</p>
-                              <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
-                              <Badge className="mt-1 text-xs bg-green-500 border-0">
-                                Assassí
+                            </div>
+                            <div className="space-y-3">
+                              <p className="font-bold text-xl">{elimination.eliminator.nickname}</p>
+                              <p className="text-sm text-muted-foreground">{elimination.eliminator.group}</p>
+                              <div className="pt-2">
+                                <Badge variant="destructive" className="px-6 py-2 text-sm font-semibold">
+                                  T'ha eliminat
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        // Organizer view - show both victim and killer
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-4 mb-6">
+                            {/* Victim */}
+                            <div className="flex-1 text-center space-y-3">
+                              <Avatar className="h-20 w-20 mx-auto ring-2 ring-red-300 ring-offset-2">
+                                <AvatarImage 
+                                  src={elimination.victim.photo || undefined} 
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="bg-gradient-to-br from-red-400 to-red-600 text-white font-bold">
+                                  {elimination.victim.nickname.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="space-y-1">
+                                <p className="font-semibold text-sm">{elimination.victim.nickname}</p>
+                                <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
+                              </div>
+                              <Badge variant="destructive" className="text-xs px-3 py-1">
+                                Víctima
                               </Badge>
                             </div>
-                          )}
+
+                            {/* Arrow or Signature */}
+                            <div className="flex flex-col items-center justify-center px-2">
+                              <div className="text-2xl text-gray-400 mb-2">→</div>
+                              {elimination.killerSignature && (
+                                <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 w-20 h-14 flex items-center justify-center">
+                                  <img 
+                                    src={elimination.killerSignature} 
+                                    alt="Signatura"
+                                    className="max-h-full max-w-full object-contain opacity-70"
+                                  />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Only show killer if organizer */}
+                            {isOrganizer && (
+                              <div className="flex-1 text-center space-y-3">
+                                <Avatar className="h-20 w-20 mx-auto ring-2 ring-green-400 ring-offset-2">
+                                  <AvatarImage 
+                                    src={elimination.eliminator.photo || undefined} 
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-700 text-white font-bold">
+                                    {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-sm">{elimination.eliminator.nickname}</p>
+                                  <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
+                                </div>
+                                <Badge className="text-xs px-3 py-1 bg-green-600 hover:bg-green-700 border-0">
+                                  Assassí
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 
                       {/* Confirm button */}
-                      <Button
-                        onClick={() => confirmElimination(elimination.id)}
-                        disabled={processingId === elimination.id}
-                        className={`w-full ${isVictim ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
-                      >
-                        {processingId === elimination.id ? (
-                          <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                            Confirmant...
-                          </div>
-                        ) : (
-                          <>
-                            <Check className="mr-2 h-4 w-4" />
-                            {isVictim ? 'Confirmar la meva eliminació' : 'Confirmar Eliminació'}
-                          </>
-                        )}
-                      </Button>
+                      <div className="pt-6">
+                        <Button
+                          onClick={() => confirmElimination(elimination.id)}
+                          disabled={processingId === elimination.id}
+                          className={`w-full h-14 font-semibold text-base shadow-lg transition-all ${
+                            isVictim 
+                              ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
+                              : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                          } text-white`}
+                        >
+                          {processingId === elimination.id ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3" />
+                              Confirmant...
+                            </div>
+                          ) : (
+                            <>
+                              <Check className="mr-3 h-5 w-5" />
+                              {isVictim ? 'Confirmar la meva eliminació' : 'Confirmar Eliminació'}
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );
