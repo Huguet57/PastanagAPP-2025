@@ -27,6 +27,7 @@ interface PendingElimination {
     nickname: string;
     group: string;
     photo: string | null;
+    userId?: string;
   };
 }
 
@@ -38,6 +39,7 @@ export default function PendingEliminationsPage() {
   const [pendingEliminations, setPendingEliminations] = useState<PendingElimination[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [isOrganizer, setIsOrganizer] = useState(false);
+  const [currentParticipantId, setCurrentParticipantId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -81,10 +83,11 @@ export default function PendingEliminationsPage() {
               const userData = await userResponse.json();
               const isOrganizerRole = userData.user?.role === 'ORGANIZER';
               setIsOrganizer(isOrganizerRole);
+              setCurrentParticipantId(userData.id);
               
-              // Filter to show only user's eliminations
+              // Show eliminations where user is victim or (if organizer) all eliminations
               const filtered = isOrganizerRole ? data : data.filter((e: PendingElimination) => 
-                e.victim.id === userData.id || e.eliminator.id === userData.id
+                e.victim.id === userData.id
               );
               setPendingEliminations(filtered);
             } else {
@@ -184,93 +187,124 @@ export default function PendingEliminationsPage() {
             </Alert>
           ) : (
             <div className="space-y-4">
-              {pendingEliminations.map((elimination) => (
-                <Card 
-                  key={elimination.id} 
-                  className="overflow-hidden border-2 border-orange-300"
-                >
-                  <CardHeader className="bg-orange-50 pb-3">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="border-orange-400 text-orange-600">
-                        Pendent de confirmació
-                      </Badge>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(elimination.timestamp).toLocaleDateString('ca-ES', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      {/* Victim */}
-                      <div className="flex-1 text-center">
-                        <Avatar className="h-16 w-16 mx-auto mb-2 border-2 border-red-300">
-                          <AvatarImage src={elimination.victim.photo || undefined} />
-                          <AvatarFallback className="bg-red-100 text-red-600">
-                            {elimination.victim.nickname.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <p className="font-semibold">{elimination.victim.nickname}</p>
-                        <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
-                        <Badge variant="destructive" className="mt-1 text-xs">
-                          Víctima
+              {pendingEliminations.map((elimination) => {
+                const isVictim = elimination.victim.id === currentParticipantId;
+                
+                return (
+                  <Card 
+                    key={elimination.id} 
+                    className={`overflow-hidden border-2 ${isVictim ? 'border-red-400' : 'border-orange-300'}`}
+                  >
+                    <CardHeader className={`${isVictim ? 'bg-red-50' : 'bg-orange-50'} pb-3`}>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className={`${isVictim ? 'border-red-400 text-red-600' : 'border-orange-400 text-orange-600'}`}>
+                          {isVictim ? 'T\'han eliminat!' : 'Pendent de confirmació'}
                         </Badge>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(elimination.timestamp).toLocaleDateString('ca-ES', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
-
-                      {/* Signature */}
-                      {elimination.killerSignature && (
-                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-2 w-24 h-16 flex items-center justify-center">
-                          <img 
-                            src={elimination.killerSignature} 
-                            alt="Signatura de l'assassí"
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                      )}
-
-                      {/* Only show killer if organizer */}
-                      {isOrganizer && (
-                        <div className="flex-1 text-center">
-                          <Avatar className="h-16 w-16 mx-auto mb-2 border-2 border-green-300">
-                            <AvatarImage src={elimination.eliminator.photo || undefined} />
-                            <AvatarFallback className="bg-green-100 text-green-600">
-                              {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <p className="font-semibold">{elimination.eliminator.nickname}</p>
-                          <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
-                          <Badge className="mt-1 text-xs bg-green-500 border-0">
-                            Assassí
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Confirm button */}
-                    <Button
-                      onClick={() => confirmElimination(elimination.id)}
-                      disabled={processingId === elimination.id}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white"
-                    >
-                      {processingId === elimination.id ? (
-                        <div className="flex items-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                          Confirmant...
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      {isVictim ? (
+                        // Victim view - show assassin's signature
+                        <div className="space-y-4">
+                          <div className="text-center">
+                            <p className="text-lg font-semibold mb-2">Has estat eliminat!</p>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Confirma la teva eliminació per continuar el joc
+                            </p>
+                          </div>
+                          
+                          {/* Assassin's signature */}
+                          {elimination.killerSignature && (
+                            <div className="mx-auto">
+                              <p className="text-sm text-muted-foreground text-center mb-2">Signatura de l'assassí:</p>
+                              <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-3 mx-auto max-w-xs">
+                                <img 
+                                  src={elimination.killerSignature} 
+                                  alt="Signatura de l'assassí"
+                                  className="max-h-24 max-w-full object-contain mx-auto"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <>
-                          <Check className="mr-2 h-4 w-4" />
-                          Confirmar Eliminació
-                        </>
+                        // Organizer view - show both victim and killer
+                        <div className="flex items-center gap-3 mb-4">
+                          {/* Victim */}
+                          <div className="flex-1 text-center">
+                            <Avatar className="h-16 w-16 mx-auto mb-2 border-2 border-red-300">
+                              <AvatarImage src={elimination.victim.photo || undefined} />
+                              <AvatarFallback className="bg-red-100 text-red-600">
+                                {elimination.victim.nickname.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <p className="font-semibold">{elimination.victim.nickname}</p>
+                            <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
+                            <Badge variant="destructive" className="mt-1 text-xs">
+                              Víctima
+                            </Badge>
+                          </div>
+
+                          {/* Signature */}
+                          {elimination.killerSignature && (
+                            <div className="bg-gray-100 border border-gray-300 rounded-lg p-2 w-24 h-16 flex items-center justify-center">
+                              <img 
+                                src={elimination.killerSignature} 
+                                alt="Signatura de l'assassí"
+                                className="max-h-full max-w-full object-contain"
+                              />
+                            </div>
+                          )}
+
+                          {/* Only show killer if organizer */}
+                          {isOrganizer && (
+                            <div className="flex-1 text-center">
+                              <Avatar className="h-16 w-16 mx-auto mb-2 border-2 border-green-300">
+                                <AvatarImage src={elimination.eliminator.photo || undefined} />
+                                <AvatarFallback className="bg-green-100 text-green-600">
+                                  {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <p className="font-semibold">{elimination.eliminator.nickname}</p>
+                              <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
+                              <Badge className="mt-1 text-xs bg-green-500 border-0">
+                                Assassí
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
                       )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+
+                      {/* Confirm button */}
+                      <Button
+                        onClick={() => confirmElimination(elimination.id)}
+                        disabled={processingId === elimination.id}
+                        className={`w-full ${isVictim ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
+                      >
+                        {processingId === elimination.id ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                            Confirmant...
+                          </div>
+                        ) : (
+                          <>
+                            <Check className="mr-2 h-4 w-4" />
+                            {isVictim ? 'Confirmar la meva eliminació' : 'Confirmar Eliminació'}
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

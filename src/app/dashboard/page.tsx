@@ -36,6 +36,7 @@ interface ParticipantInfo {
   position: number;
   totalParticipants: number;
   pendingEliminations?: number;
+  targetHasPendingElimination?: boolean;
   user?: {
     role: string;
   };
@@ -135,16 +136,23 @@ export default function DashboardPage() {
         console.log('✅ Participant info received:', participant);
         setParticipantInfo(participant);
         
-        // Check for pending eliminations if user is eliminated
-        if (participant.status === 'ELIMINATED') {
-          const pendingResponse = await fetch(`/api/eliminations?gameId=${game.id}&confirmed=false`);
-          if (pendingResponse.ok) {
-            const pendingData = await pendingResponse.json();
-            const userPending = pendingData.filter((e: any) => e.victim.userId === session.user.id);
-            if (userPending.length > 0) {
-              setParticipantInfo(prev => prev ? {...prev, pendingEliminations: userPending.length} : null);
-            }
-          }
+        // Check for pending eliminations
+        const pendingResponse = await fetch(`/api/eliminations?gameId=${game.id}&confirmed=false`);
+        if (pendingResponse.ok) {
+          const pendingData = await pendingResponse.json();
+          
+          // Check if user is the victim of any pending elimination
+          const userPending = pendingData.filter((e: any) => e.victim.userId === session.user.id);
+          
+          // Check if user's target has any pending eliminations (to prevent duplicate reports)
+          const targetPending = participant.target ? 
+            pendingData.filter((e: any) => e.victim.id === participant.target.id) : [];
+          
+          setParticipantInfo(prev => prev ? {
+            ...prev, 
+            pendingEliminations: userPending.length,
+            targetHasPendingElimination: targetPending.length > 0
+          } : null);
         }
       } catch (err) {
         console.error('💥 Dashboard fetch error:', err);
@@ -357,7 +365,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Pending Elimination Alert - if user has been eliminated */}
-          {hasPendingEliminations && (
+          {hasPendingEliminations ? (
             <Card className="border-2 border-orange-400 bg-orange-50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -380,7 +388,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          ) : null }
 
           {/* Target Card - More visual and fun */}
           {isAlive && participantInfo.target && (
@@ -403,13 +411,27 @@ export default function DashboardPage() {
                     <p className="text-2xl font-bold">{participantInfo.target.nickname}</p>
                     <p className="text-muted-foreground">{participantInfo.target.group}</p>
                   </div>
+                  
+                  {/* Warning if target has pending elimination */}
+                  {participantInfo.targetHasPendingElimination && (
+                    <Alert className="border-orange-300 bg-orange-50">
+                      <Clock className="h-4 w-4 text-orange-600" />
+                      <AlertDescription className="text-sm">
+                        Aquesta víctima ja té una eliminació pendent de confirmar
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
                   <Button 
                     size="lg" 
                     onClick={() => router.push(`/game/elimination?targetId=${participantInfo.target?.id}`)}
                     className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-6 text-lg shadow-lg hover:shadow-xl transition-all"
+                    disabled={participantInfo.targetHasPendingElimination}
                   >
                     <Skull className="mr-2 h-6 w-6" />
-                    L'he eliminat!
+                    {participantInfo.targetHasPendingElimination ? 
+                      "Eliminació pendent de confirmar" : 
+                      "L'he eliminat!"}
                   </Button>
                 </div>
               </CardContent>

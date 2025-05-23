@@ -23,10 +23,48 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [existingSignature, setExistingSignature] = useState<string | null>(null);
+  const [loadingSignature, setLoadingSignature] = useState(true);
+
+  // Fetch participant's existing signature
+  useEffect(() => {
+    const fetchParticipantSignature = async () => {
+      try {
+        const response = await fetch('/api/participants/me/signature');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.signature) {
+            setExistingSignature(data.signature);
+            setHasSignature(true);
+            // Draw the existing signature on the canvas
+            const canvas = canvasRef.current;
+            if (canvas) {
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                const img = new Image();
+                img.onload = () => {
+                  canvas.width = canvas.offsetWidth;
+                  canvas.height = canvas.offsetHeight;
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = data.signature;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching signature:', error);
+      } finally {
+        setLoadingSignature(false);
+      }
+    };
+
+    fetchParticipantSignature();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || loadingSignature) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -40,7 +78,16 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-  }, []);
+
+    // If we have an existing signature and canvas is ready, draw it
+    if (existingSignature) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      img.src = existingSignature;
+    }
+  }, [loadingSignature, existingSignature]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
@@ -89,6 +136,7 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
+    setExistingSignature(null);
   };
 
   const getSignatureData = (): string => {
@@ -177,34 +225,43 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
         <CardHeader>
           <CardTitle>La teva signatura</CardTitle>
           <CardDescription>
-            Signa per confirmar l'eliminació. La teva signatura apareixerà al cementiri com a pista.
+            {existingSignature 
+              ? "Aquesta és la teva signatura actual. Pots mantenir-la o dibuixar-ne una de nova."
+              : "Signa per confirmar l'eliminació. La teva signatura apareixerà al cementiri com a pista."
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-2 bg-white">
-              <canvas
-                ref={canvasRef}
-                className="w-full h-48 cursor-crosshair touch-none"
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                onTouchStart={startDrawing}
-                onTouchMove={draw}
-                onTouchEnd={stopDrawing}
-              />
-            </div>
+            {loadingSignature ? (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-2 bg-white h-48 flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-2 bg-white">
+                <canvas
+                  ref={canvasRef}
+                  className="w-full h-48 cursor-crosshair touch-none"
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                  onTouchStart={startDrawing}
+                  onTouchMove={draw}
+                  onTouchEnd={stopDrawing}
+                />
+              </div>
+            )}
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={clearCanvas}
-              disabled={!hasSignature || loading}
+              disabled={!hasSignature || loading || loadingSignature}
               className="w-full"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Esborrar signatura
+              {existingSignature ? "Dibuixar nova signatura" : "Esborrar signatura"}
             </Button>
           </div>
         </CardContent>
@@ -215,6 +272,7 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
         <AlertDescription>
           Un cop reportis l'eliminació, la víctima o un organitzador hauran de confirmar-la. 
           Si s'aprova, se t'assignarà automàticament la següent víctima.
+          {existingSignature && " Si dibuixes una nova signatura, s'actualitzarà a totes les teves eliminacions anteriors."}
         </AlertDescription>
       </Alert>
 
@@ -222,7 +280,7 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
       <Button 
         size="lg" 
         className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold"
-        disabled={loading || !hasSignature}
+        disabled={loading || !hasSignature || loadingSignature}
         onClick={handleSubmit}
       >
         {loading ? (

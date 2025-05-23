@@ -61,16 +61,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the elimination (not confirmed yet)
-    const elimination = await prisma.elimination.create({
-      data: {
-        gameId: participant.gameId,
-        eliminatorId: participant.id,
+    // Check if target already has a pending elimination
+    const existingPendingElimination = await prisma.elimination.findFirst({
+      where: {
         victimId: validatedData.targetId,
-        method: 'Eliminació estàndard', // Default method
-        killerSignature: validatedData.killerSignature,
-        confirmed: false // Pending confirmation
+        gameId: participant.gameId,
+        confirmed: false
       }
+    });
+
+    if (existingPendingElimination) {
+      return NextResponse.json(
+        { error: 'Aquesta víctima ja té una eliminació pendent de confirmar' },
+        { status: 400 }
+      );
+    }
+
+    // Create the elimination and update participant signature in a transaction
+    const [elimination] = await prisma.$transaction(async (tx) => {
+      // Update participant's signature if it's not set or different
+      if (participant.signature !== validatedData.killerSignature) {
+        await tx.participant.update({
+          where: { id: participant.id },
+          data: { signature: validatedData.killerSignature }
+        });
+
+        // Update all previous eliminations by this participant with the new signature
+        await tx.elimination.updateMany({
+          where: { 
+            eliminatorId: participant.id,
+            confirmed: true
+          },
+          data: { killerSignature: validatedData.killerSignature }
+        });
+      }
+
+      // Create the elimination
+      const newElimination = await tx.elimination.create({
+        data: {
+          gameId: participant.gameId,
+          eliminatorId: participant.id,
+          victimId: validatedData.targetId,
+          method: 'Eliminació estàndard', // Default method
+          killerSignature: validatedData.killerSignature,
+          confirmed: false // Pending confirmation
+        }
+      });
+
+      return [newElimination];
     });
 
     return NextResponse.json({
