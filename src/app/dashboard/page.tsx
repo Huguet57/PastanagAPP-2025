@@ -153,58 +153,12 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
       <div className="container mx-auto py-6 px-4 max-w-md">
         <div className="space-y-6">
-          {/* Game Title - Simplified */}
-          <div className="text-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text">
-              {gameInfo.name}
+          {/* Simple Greeting */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-800">
+              Hola, {participantInfo.nickname}!
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {participantInfo.position} de {participantInfo.totalParticipants} jugadors vius
-            </p>
           </div>
-
-          {/* Player Card - Simplified and more visual */}
-          <Card className={`overflow-hidden ${!isAlive ? 'opacity-75 grayscale' : ''}`}>
-            <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-                    <AvatarImage src={participantInfo.photo || undefined} />
-                    <AvatarFallback className="text-2xl bg-white text-orange-500">
-                      {participantInfo.nickname.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-white">
-                    <h2 className="text-2xl font-bold">{participantInfo.nickname}</h2>
-                    <p className="text-orange-100">{participantInfo.group}</p>
-                  </div>
-                </div>
-                <Badge 
-                  variant={isAlive ? 'secondary' : hasWon ? 'default' : 'destructive'}
-                  className={`text-lg px-4 py-2 font-bold ${
-                    isAlive ? 'bg-green-500 text-white border-0' : 
-                    hasWon ? 'bg-yellow-500 text-black border-0' : 
-                    'bg-red-500 text-white border-0'
-                  }`}
-                >
-                  {isAlive ? 'VIU' : hasWon ? '👑' : 'ELIMINAT'}
-                </Badge>
-              </div>
-            </div>
-            
-            {/* Simple stats bar */}
-            <div className="bg-white p-4 flex justify-around text-center">
-              <div>
-                <p className="text-3xl font-bold text-orange-500">{participantInfo.eliminations}</p>
-                <p className="text-xs text-muted-foreground">Eliminacions</p>
-              </div>
-              <div className="border-l-2 border-orange-200" />
-              <div>
-                <p className="text-3xl font-bold text-orange-500">#{participantInfo.position}</p>
-                <p className="text-xs text-muted-foreground">Posició</p>
-              </div>
-            </div>
-          </Card>
 
           {/* Target Card - More visual and fun */}
           {isAlive && participantInfo.target && (
