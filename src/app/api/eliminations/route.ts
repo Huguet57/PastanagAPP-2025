@@ -6,8 +6,6 @@ import { z } from 'zod';
 
 const createEliminationSchema = z.object({
   targetId: z.string(),
-  method: z.string().min(1),
-  location: z.string().optional(),
   witnesses: z.array(z.string()).optional(),
   victimSignature: z.string()
 });
@@ -70,8 +68,8 @@ export async function POST(request: NextRequest) {
         gameId: participant.gameId,
         eliminatorId: participant.id,
         victimId: validatedData.targetId,
-        method: validatedData.method,
-        location: validatedData.location || null,
+        method: null,
+        location: null,
         witnesses: validatedData.witnesses ? JSON.stringify(validatedData.witnesses) : null,
         confirmed: false
       }

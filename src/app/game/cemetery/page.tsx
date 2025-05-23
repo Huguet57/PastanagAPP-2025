@@ -8,14 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Skull, Calendar, MapPin, Users } from 'lucide-react';
+import { ArrowLeft, Skull, Calendar, Users } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Elimination {
   id: string;
   timestamp: string;
-  location: string | null;
-  method: string;
   witnesses: string[];
   confirmed: boolean;
   eliminator: {
@@ -148,35 +146,6 @@ export default function CemeteryPage() {
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* Elimination Details */}
                     <div className="space-y-4">
-                      <div>
-                        <p className="font-semibold mb-1">Assassí:</p>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={elimination.eliminator.photo || undefined} />
-                            <AvatarFallback>
-                              {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>{elimination.eliminator.nickname}</span>
-                          <span className="text-muted-foreground">({elimination.eliminator.group})</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="font-semibold mb-1">Mètode:</p>
-                        <p className="text-muted-foreground">{elimination.method}</p>
-                      </div>
-
-                      {elimination.location && (
-                        <div>
-                          <p className="font-semibold mb-1 flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            Localització:
-                          </p>
-                          <p className="text-muted-foreground">{elimination.location}</p>
-                        </div>
-                      )}
-
                       {elimination.witnesses.length > 0 && (
                         <div>
                           <p className="font-semibold mb-1 flex items-center gap-1">

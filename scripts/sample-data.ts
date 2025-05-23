@@ -133,40 +133,30 @@ async function main() {
     {
       eliminatorIndex: 0, // Martina kills Jordi
       victimIndex: 1,
-      method: 'Li he posat la pastanaga a la motxilla mentre no mirava',
-      location: 'Hall de la facultat',
       witnesses: ['Pere Sánchez', 'Anna Puig'],
       daysAgo: 5
     },
     {
       eliminatorIndex: 0, // Martina kills Bernat (after getting Jordi's target)
       victimIndex: 2,
-      method: 'Emboscada a la sortida del metro',
-      location: 'Estació L3 Palau Reial',
       witnesses: [],
       daysAgo: 3
     },
     {
       eliminatorIndex: 6, // Roger kills Laia
       victimIndex: 12,
-      method: 'Li he donat la mà amb la pastanaga amagada',
-      location: 'Entrada principal FME',
       witnesses: ['Marc Torres'],
       daysAgo: 4
     },
     {
       eliminatorIndex: 5, // Dani kills Roger
       victimIndex: 6,
-      method: 'Pastanaga ninja durant el coffee break',
-      location: 'Bar de la facultat',
       witnesses: ['Laura Martínez', 'Carles Ros'],
       daysAgo: 2
     },
     {
       eliminatorIndex: 10, // Joan kills Ernesto
       victimIndex: 11,
-      method: 'Li he deixat la pastanaga a la cadira abans que s\'assegués',
-      location: 'Aula S05',
       witnesses: [],
       daysAgo: 1
     }
@@ -183,8 +173,8 @@ async function main() {
         gameId: game.id,
         eliminatorId: eliminator.id,
         victimId: victim.id,
-        method: elim.method,
-        location: elim.location,
+        method: null,
+        location: null,
         witnesses: elim.witnesses.length > 0 ? JSON.stringify(elim.witnesses) : null,
         confirmed: true,
         timestamp: new Date(Date.now() - elim.daysAgo * 24 * 60 * 60 * 1000)

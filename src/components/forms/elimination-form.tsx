@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, RefreshCw, Save, Send } from 'lucide-react';
@@ -26,8 +25,6 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
   const [hasSignature, setHasSignature] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    method: '',
-    location: '',
     witnesses: ''
   });
 
@@ -117,14 +114,6 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
       return;
     }
 
-    if (!formData.method.trim()) {
-      toast({
-        title: 'Mètode requerit',
-        description: 'Has d\'especificar com has eliminat la víctima',
-        variant: 'destructive'
-      });
-      return;
-    }
 
     setLoading(true);
 
@@ -142,8 +131,6 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
         },
         body: JSON.stringify({
           targetId,
-          method: formData.method,
-          location: formData.location,
           witnesses: witnessesArray,
           victimSignature: signatureData
         })
@@ -199,34 +186,12 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
       {/* Elimination Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Detalls de l'eliminació</CardTitle>
-          <CardDescription>Proporciona informació sobre com has eliminat la víctima</CardDescription>
+          <CardTitle>Testimonis (opcional)</CardTitle>
+          <CardDescription>Indica qui ha presenciat l'eliminació</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="method">Mètode d'eliminació *</Label>
-            <Textarea
-              id="method"
-              placeholder="Descriu com has eliminat la víctima..."
-              value={formData.method}
-              onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-              required
-              className="min-h-[100px]"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">Localització (opcional)</Label>
-            <Input
-              id="location"
-              placeholder="On ha passat l'eliminació?"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="witnesses">Testimonis (opcional)</Label>
+            <Label htmlFor="witnesses">Testimonis</Label>
             <Input
               id="witnesses"
               placeholder="Noms dels testimonis, separats per comes"
@@ -300,7 +265,7 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
         type="submit" 
         size="lg" 
         className="w-full"
-        disabled={loading || !hasSignature || !formData.method}
+        disabled={loading || !hasSignature}
       >
         {loading ? (
           <>
