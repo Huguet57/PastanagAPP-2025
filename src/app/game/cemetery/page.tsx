@@ -83,10 +83,10 @@ export default function CemeteryPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4 max-w-6xl">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 via-white to-gray-100">
+      <div className="container mx-auto py-6 px-4 max-w-md">
+        <div className="space-y-6">
+          {/* Header */}
           <div>
             <Button 
               variant="ghost" 
@@ -96,117 +96,108 @@ export default function CemeteryPage() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Tornar al dashboard
             </Button>
-            <h1 className="text-4xl font-bold flex items-center gap-3">
-              <Skull className="h-10 w-10" />
+            <h1 className="text-3xl font-bold flex items-center gap-3 justify-center">
+              <Skull className="h-8 w-8 text-gray-600" />
               Cementiri
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground text-center text-sm mt-2">
               {eliminations.length} víctimes descansen en pau
             </p>
           </div>
-        </div>
 
-        {eliminations.length === 0 ? (
-          <Alert>
-            <AlertDescription>
-              Encara no hi ha cap víctima al cementiri. El joc acaba de començar!
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="grid gap-6">
-            {eliminations.map((elimination) => (
-              <Card key={elimination.id} className="overflow-hidden">
-                <CardHeader className="bg-muted/50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-16 w-16 border-4 border-red-600">
-                        <AvatarImage src={elimination.victim.photo || undefined} />
-                        <AvatarFallback className="bg-red-100">
-                          {elimination.victim.nickname.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-2xl">{elimination.victim.nickname}</CardTitle>
-                        <CardDescription className="text-lg">{elimination.victim.group}</CardDescription>
-                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(elimination.timestamp).toLocaleDateString('ca-ES', {
-                            day: 'numeric',
-                            month: 'long',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                    <Badge variant="destructive" className="text-lg px-3 py-1">
-                      R.I.P.
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Elimination Details */}
-                    <div className="space-y-4">
-                      <div>
-                        <p className="font-semibold mb-1">Assassí:</p>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={elimination.eliminator.photo || undefined} />
-                            <AvatarFallback>
-                              {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>{elimination.eliminator.nickname}</span>
-                          <span className="text-muted-foreground">({elimination.eliminator.group})</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="font-semibold mb-1">Mètode:</p>
-                        <p className="text-muted-foreground">{elimination.method}</p>
+          {eliminations.length === 0 ? (
+            <Alert className="bg-gray-50 border-gray-200">
+              <AlertDescription className="text-center">
+                Encara no hi ha cap víctima. Que comenci el joc! 🔪
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-4">
+              {eliminations.map((elimination, index) => (
+                <Card 
+                  key={elimination.id} 
+                  className="overflow-hidden bg-white/90 backdrop-blur hover:shadow-lg transition-shadow"
+                >
+                  <div className="p-4">
+                    {/* Main row with avatars and signature */}
+                    <div className="flex items-start gap-3">
+                      {/* Victim Avatar */}
+                      <div className="flex flex-col items-center">
+                        <Avatar className="h-20 w-20 grayscale opacity-80 border-2 border-gray-300">
+                          <AvatarImage src={elimination.victim.photo || undefined} />
+                          <AvatarFallback className="bg-gray-200 text-gray-500 text-xl">
+                            {elimination.victim.nickname.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="font-semibold mt-1 text-center">{elimination.victim.nickname}</p>
+                        <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
+                        <Badge variant="destructive" className="mt-1 text-xs">
+                          † RIP
+                        </Badge>
                       </div>
 
-                      {elimination.location && (
-                        <div>
-                          <p className="font-semibold mb-1 flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            Localització:
+                      {/* Signature in the middle */}
+                      {elimination.victim.signature && (
+                        <div className="flex-grow">
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 h-24 flex items-center justify-center">
+                            <img 
+                              src={elimination.victim.signature} 
+                              alt={`Signatura de ${elimination.victim.nickname}`}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                          <p className="text-xs text-center text-muted-foreground mt-1">
+                            {new Date(elimination.timestamp).toLocaleDateString('ca-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
-                          <p className="text-muted-foreground">{elimination.location}</p>
                         </div>
                       )}
 
-                      {elimination.witnesses.length > 0 && (
-                        <div>
-                          <p className="font-semibold mb-1 flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            Testimonis:
-                          </p>
-                          <p className="text-muted-foreground">{elimination.witnesses.join(', ')}</p>
-                        </div>
-                      )}
+                      {/* Killer Avatar */}
+                      <div className="flex flex-col items-center">
+                        <Avatar className="h-20 w-20 border-2 border-green-400">
+                          <AvatarImage src={elimination.eliminator.photo || undefined} />
+                          <AvatarFallback className="bg-green-100 text-green-700 text-xl">
+                            {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="font-semibold mt-1 text-center">{elimination.eliminator.nickname}</p>
+                        <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
+                        <Badge className="mt-1 text-xs bg-green-500 border-0">
+                          VIU
+                        </Badge>
+                      </div>
                     </div>
 
-                    {/* Victim Signature */}
-                    {elimination.victim.signature && (
-                      <div>
-                        <p className="font-semibold mb-2">Última signatura:</p>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-2 bg-white">
-                          <img 
-                            src={elimination.victim.signature} 
-                            alt={`Signatura de ${elimination.victim.nickname}`}
-                            className="w-full h-32 object-contain"
-                          />
-                        </div>
+                    {/* Method - Only if interesting */}
+                    {elimination.method && elimination.method !== 'Eliminació estàndard' && (
+                      <div className="mt-3 text-center">
+                        <p className="text-sm italic text-muted-foreground">
+                          "{elimination.method}"
+                        </p>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Fun footer message */}
+          {eliminations.length > 0 && (
+            <Card className="bg-gray-100 border-gray-300">
+              <CardContent className="p-4 text-center">
+                <p className="text-sm text-gray-600">
+                  🪦 Que les seves ànimes descansin en pau... fins al proper joc! 🪦
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

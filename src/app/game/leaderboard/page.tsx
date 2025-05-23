@@ -74,140 +74,138 @@ export default function LeaderboardPage() {
   const getPositionIcon = (position: number) => {
     switch (position) {
       case 1:
-        return <Crown className="h-6 w-6 text-yellow-500" />;
+        return <Crown className="h-8 w-8 text-yellow-500 absolute -top-3 -right-3 rotate-12" />;
       case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />;
+        return <Medal className="h-6 w-6 text-gray-400 absolute -top-2 -right-2" />;
       case 3:
-        return <Award className="h-6 w-6 text-orange-600" />;
+        return <Award className="h-6 w-6 text-orange-600 absolute -top-2 -right-2" />;
       default:
         return null;
     }
   };
 
-  const getPositionStyles = (position: number) => {
-    switch (position) {
-      case 1:
-        return 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300';
-      case 2:
-        return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-300';
-      case 3:
-        return 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-300';
-      default:
-        return '';
-    }
-  };
-
   return (
-    <div className="container mx-auto py-10 px-4 max-w-4xl">
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <Button 
-            variant="ghost" 
-            onClick={() => router.push('/dashboard')}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Tornar al dashboard
-          </Button>
-          <h1 className="text-4xl font-bold flex items-center gap-3">
-            <Trophy className="h-10 w-10 text-primary" />
-            Rànquing d'Assassins
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Els millors assassins de la Pastanaga
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
+      <div className="container mx-auto py-6 px-4 max-w-md">
+        <div className="space-y-6">
+          {/* Header */}
+          <div>
+            <Button 
+              variant="ghost" 
+              onClick={() => router.push('/dashboard')}
+              className="mb-4 text-orange-600 hover:text-orange-700"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Tornar al dashboard
+            </Button>
+            <h1 className="text-3xl font-bold flex items-center gap-3 justify-center">
+              <Trophy className="h-8 w-8 text-orange-500" />
+              Rànquing d'Assassins
+            </h1>
+            <p className="text-muted-foreground text-center text-sm mt-2">
+              Els millors assassins de la Pastanaga
+            </p>
+          </div>
 
-        {entries.length === 0 ? (
-          <Alert>
-            <AlertDescription>
-              Encara no hi ha dades del rànquing disponibles.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="space-y-4">
-            {entries.map((entry) => (
-              <Card 
-                key={entry.id} 
-                className={`
-                  transition-all hover:shadow-lg
-                  ${entry.id === currentUserId ? 'ring-2 ring-primary' : ''}
-                  ${getPositionStyles(entry.position)}
-                `}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {/* Position */}
-                      <div className="flex flex-col items-center justify-center w-16">
-                        {getPositionIcon(entry.position)}
-                        <span className="text-2xl font-bold">
-                          #{entry.position}
-                        </span>
+          {entries.length === 0 ? (
+            <Alert>
+              <AlertDescription>
+                Encara no hi ha dades del rànquing disponibles.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-3">
+              {entries.map((entry) => (
+                <Card 
+                  key={entry.id} 
+                  className={`
+                    transition-all hover:shadow-lg overflow-hidden
+                    ${entry.id === currentUserId ? 'ring-2 ring-orange-400' : ''}
+                    ${entry.position <= 3 ? 'bg-gradient-to-r ' + 
+                      (entry.position === 1 ? 'from-yellow-50 to-orange-50' : 
+                       entry.position === 2 ? 'from-gray-50 to-slate-50' : 
+                       'from-orange-50 to-amber-50') : ''}
+                  `}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        {/* Position Number */}
+                        <div className={`
+                          text-2xl font-bold w-8 text-center
+                          ${entry.position === 1 ? 'text-yellow-600' : 
+                            entry.position === 2 ? 'text-gray-500' : 
+                            entry.position === 3 ? 'text-orange-600' : 'text-gray-400'}
+                        `}>
+                          {entry.position}
+                        </div>
+
+                        {/* Player Avatar and Info */}
+                        <div className="relative">
+                          <Avatar className={`h-16 w-16 border-2 ${
+                            entry.status === 'ELIMINATED' ? 'opacity-50 grayscale border-gray-300' : 
+                            entry.position === 1 ? 'border-yellow-400' :
+                            entry.position === 2 ? 'border-gray-400' :
+                            entry.position === 3 ? 'border-orange-400' : 'border-gray-200'
+                          }`}>
+                            <AvatarImage src={entry.photo || undefined} />
+                            <AvatarFallback className={`text-xl ${
+                              entry.status === 'ELIMINATED' ? 'bg-gray-100 text-gray-400' : 
+                              'bg-orange-100 text-orange-600'
+                            }`}>
+                              {entry.nickname.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {getPositionIcon(entry.position)}
+                        </div>
+                        
+                        <div className="flex-grow">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-lg">{entry.nickname}</p>
+                            {entry.id === currentUserId && (
+                              <Badge variant="outline" className="text-xs border-orange-300 text-orange-600">TU</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{entry.group}</p>
+                          <Badge 
+                            variant={entry.status === 'ALIVE' ? 'default' : 
+                                    entry.status === 'WINNER' ? 'secondary' : 'destructive'}
+                            className={`mt-1 text-xs ${
+                              entry.status === 'ALIVE' ? 'bg-green-500 border-0' : 
+                              entry.status === 'WINNER' ? 'bg-yellow-500 text-black border-0' : 
+                              'bg-red-500 border-0'
+                            }`}
+                          >
+                            {entry.status === 'ALIVE' ? 'VIU' : 
+                             entry.status === 'WINNER' ? '👑' : 'ELIMINAT'}
+                          </Badge>
+                        </div>
                       </div>
 
-                      {/* Player Info */}
-                      <Avatar className={`h-16 w-16 ${entry.status === 'ELIMINATED' ? 'opacity-50' : ''}`}>
-                        <AvatarImage src={entry.photo || undefined} />
-                        <AvatarFallback>
-                          {entry.nickname.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xl font-semibold">{entry.nickname}</p>
-                          {entry.id === currentUserId && (
-                            <Badge variant="outline" className="text-xs">TU</Badge>
-                          )}
+                      {/* Eliminations Count - Simplified */}
+                      <div className="text-center">
+                        <div className="flex items-center gap-1">
+                          <Target className="h-4 w-4 text-orange-400" />
+                          <p className="text-2xl font-bold text-orange-600">{entry.eliminations}</p>
                         </div>
-                        <p className="text-muted-foreground">{entry.group}</p>
-                        <Badge 
-                          variant={entry.status === 'ALIVE' ? 'default' : 
-                                  entry.status === 'WINNER' ? 'secondary' : 'destructive'}
-                          className="mt-1"
-                        >
-                          {entry.status === 'ALIVE' ? 'VIU' : 
-                           entry.status === 'WINNER' ? 'GUANYADOR' : 'ELIMINAT'}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex gap-6 text-center">
-                      <div>
-                        <div className="flex items-center justify-center mb-1">
-                          <Target className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <p className="text-2xl font-bold">{entry.eliminations}</p>
                         <p className="text-xs text-muted-foreground">Eliminacions</p>
                       </div>
-                      <div>
-                        <p className="text-2xl font-bold">{entry.survivalTime}h</p>
-                        <p className="text-xs text-muted-foreground">Supervivència</p>
-                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-        {/* Legend */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Com es calcula la puntuació?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Cada eliminació confirmada: +100 punts</li>
-              <li>• Cada hora de supervivència: +1 punt</li>
-              <li>• Bonus per ser l'últim supervivient: +500 punts</li>
-              <li>• Els jugadors eliminats mantenen els seus punts</li>
-            </ul>
-          </CardContent>
-        </Card>
+          {/* Simplified Legend */}
+          <Card className="mt-8 bg-orange-50 border-orange-200">
+            <CardContent className="p-4">
+              <p className="text-sm text-center text-orange-700">
+                👑 El primer en eliminar i l'últim en morir guanya!
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

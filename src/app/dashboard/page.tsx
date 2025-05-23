@@ -150,149 +150,146 @@ export default function DashboardPage() {
   const hasWon = participantInfo.status === 'WINNER';
 
   return (
-    <div className="container mx-auto py-10 px-4 max-w-6xl">
-      <div className="space-y-6">
-        {/* Game Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2">{gameInfo.name}</h1>
-          <p className="text-muted-foreground">
-            {participantInfo.position} de {participantInfo.totalParticipants} jugadors vius
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
+      <div className="container mx-auto py-6 px-4 max-w-md">
+        <div className="space-y-6">
+          {/* Game Title - Simplified */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text">
+              {gameInfo.name}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {participantInfo.position} de {participantInfo.totalParticipants} jugadors vius
+            </p>
+          </div>
 
-        {/* Player Status Card */}
-        <Card className={!isAlive ? 'opacity-75' : ''}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={participantInfo.photo || undefined} />
-                  <AvatarFallback>{participantInfo.nickname.slice(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle>{participantInfo.nickname}</CardTitle>
-                  <CardDescription>{participantInfo.group}</CardDescription>
-                </div>
-              </div>
-              <Badge 
-                variant={isAlive ? 'default' : hasWon ? 'secondary' : 'destructive'}
-                className="text-lg px-4 py-2"
-              >
-                {isAlive ? 'VIU' : hasWon ? 'GUANYADOR' : 'ELIMINAT'}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <Trophy className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="text-2xl font-bold">{participantInfo.eliminations}</p>
-                <p className="text-sm text-muted-foreground">Eliminacions</p>
-              </div>
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <Target className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="text-2xl font-bold">#{participantInfo.position}</p>
-                <p className="text-sm text-muted-foreground">Posició</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Target Card - Only show if alive and has target */}
-        {isAlive && participantInfo.target && (
-          <Card className="border-2 border-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                La teva víctima
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* Player Card - Simplified and more visual */}
+          <Card className={`overflow-hidden ${!isAlive ? 'opacity-75 grayscale' : ''}`}>
+            <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20">
+                  <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+                    <AvatarImage src={participantInfo.photo || undefined} />
+                    <AvatarFallback className="text-2xl bg-white text-orange-500">
+                      {participantInfo.nickname.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-white">
+                    <h2 className="text-2xl font-bold">{participantInfo.nickname}</h2>
+                    <p className="text-orange-100">{participantInfo.group}</p>
+                  </div>
+                </div>
+                <Badge 
+                  variant={isAlive ? 'secondary' : hasWon ? 'default' : 'destructive'}
+                  className={`text-lg px-4 py-2 font-bold ${
+                    isAlive ? 'bg-green-500 text-white border-0' : 
+                    hasWon ? 'bg-yellow-500 text-black border-0' : 
+                    'bg-red-500 text-white border-0'
+                  }`}
+                >
+                  {isAlive ? 'VIU' : hasWon ? '👑' : 'ELIMINAT'}
+                </Badge>
+              </div>
+            </div>
+            
+            {/* Simple stats bar */}
+            <div className="bg-white p-4 flex justify-around text-center">
+              <div>
+                <p className="text-3xl font-bold text-orange-500">{participantInfo.eliminations}</p>
+                <p className="text-xs text-muted-foreground">Eliminacions</p>
+              </div>
+              <div className="border-l-2 border-orange-200" />
+              <div>
+                <p className="text-3xl font-bold text-orange-500">#{participantInfo.position}</p>
+                <p className="text-xs text-muted-foreground">Posició</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Target Card - More visual and fun */}
+          {isAlive && participantInfo.target && (
+            <Card className="border-2 border-orange-400 overflow-hidden">
+              <CardHeader className="bg-orange-100 pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Target className="h-5 w-5 text-orange-500" />
+                  La teva víctima
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center space-y-4">
+                  <Avatar className="h-32 w-32 mx-auto border-4 border-orange-300 shadow-xl">
                     <AvatarImage src={participantInfo.target.photo || undefined} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-4xl bg-orange-100 text-orange-600">
                       {participantInfo.target.nickname.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-2xl font-semibold">{participantInfo.target.nickname}</p>
+                    <p className="text-2xl font-bold">{participantInfo.target.nickname}</p>
                     <p className="text-muted-foreground">{participantInfo.target.group}</p>
                   </div>
+                  <Button 
+                    size="lg" 
+                    onClick={() => router.push(`/game/elimination?targetId=${participantInfo.target?.id}`)}
+                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold"
+                  >
+                    <Skull className="mr-2 h-5 w-5" />
+                    Reportar Eliminació
+                  </Button>
                 </div>
-                <Button 
-                  size="lg" 
-                  onClick={() => router.push(`/game/elimination?targetId=${participantInfo.target?.id}`)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Skull className="mr-2 h-5 w-5" />
-                  Reportar Eliminació
-                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Winner Message - More celebratory */}
+          {hasWon && (
+            <Card className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-white overflow-hidden">
+              <div className="p-8 text-center">
+                <Trophy className="h-16 w-16 mx-auto mb-4 animate-bounce" />
+                <h2 className="text-3xl font-bold mb-2">🎉 ENHORABONA! 🎉</h2>
+                <p className="text-lg">
+                  Ets l'últim supervivent!
+                </p>
+                <p className="mt-2">
+                  {participantInfo.eliminations} eliminacions
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </Card>
+          )}
 
-        {/* Winner Message */}
-        {hasWon && (
-          <Card className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <Trophy className="h-8 w-8" />
-                Enhorabona, has guanyat!
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg">
-                Has sobreviscut fins al final i t'has proclamat com l'assassí més letal 
-                amb {participantInfo.eliminations} eliminacions!
-              </p>
-            </CardContent>
-          </Card>
-        )}
+          {/* Eliminated Message - Simpler */}
+          {!isAlive && !hasWon && (
+            <Card className="bg-gray-100 border-gray-300">
+              <CardContent className="p-6 text-center">
+                <Skull className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-xl font-semibold text-gray-600">Has estat eliminat</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Però encara pots veure el rànquing!
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Eliminated Message */}
-        {!isAlive && !hasWon && (
-          <Alert>
-            <Skull className="h-4 w-4" />
-            <AlertTitle>Has estat eliminat</AlertTitle>
-            <AlertDescription>
-              La teva aventura en aquest joc ha acabat, però pots seguir consultant 
-              el rànquing i les estadístiques.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => router.push('/game/leaderboard')}
-            className="w-full"
-          >
-            <Trophy className="mr-2 h-4 w-4" />
-            Veure Rànquing
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => router.push('/game/cemetery')}
-            className="w-full"
-          >
-            <Skull className="mr-2 h-4 w-4" />
-            Veure Cementiri
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => router.push('/game/rules')}
-            className="w-full"
-          >
-            <AlertCircle className="mr-2 h-4 w-4" />
-            Veure Regles
-          </Button>
+          {/* Quick Actions - Simplified */}
+          <div className="space-y-3">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => router.push('/game/leaderboard')}
+              className="w-full border-orange-300 hover:bg-orange-50"
+            >
+              <Trophy className="mr-2 h-4 w-4 text-orange-500" />
+              Rànquing d'Assassins
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => router.push('/game/cemetery')}
+              className="w-full border-gray-300 hover:bg-gray-50"
+            >
+              <Skull className="mr-2 h-4 w-4" />
+              Cementiri
+            </Button>
+          </div>
         </div>
       </div>
     </div>
