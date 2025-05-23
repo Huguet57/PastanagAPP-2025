@@ -108,6 +108,7 @@ model Elimination {
   location      String?
   method        String?  // How the elimination happened
   witnesses     String?  // JSON array of witness names
+  killerSignature String? // Base64 encoded killer's signature
   confirmed     Boolean  @default(false)
   createdAt     DateTime @default(now())
 

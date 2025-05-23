@@ -14,22 +14,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 interface Elimination {
   id: string;
   timestamp: string;
-  location: string | null;
-  method: string;
-  witnesses: string[];
-  confirmed: boolean;
-  eliminator: {
-    id: string;
-    nickname: string;
-    group: string;
-    photo: string | null;
-  };
+  killerSignature: string | null;
   victim: {
     id: string;
     nickname: string;
     group: string;
     photo: string | null;
-    signature: string | null;
   };
 }
 
@@ -113,86 +103,64 @@ export default function CemeteryPage() {
             </Alert>
           ) : (
             <div className="space-y-4">
-              {eliminations.map((elimination, index) => (
+              {eliminations.map((elimination) => (
                 <Card 
                   key={elimination.id} 
                   className="overflow-hidden bg-white/90 backdrop-blur hover:shadow-lg transition-shadow"
                 >
                   <div className="p-4">
-                    {/* Main row with avatars and signature */}
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-center gap-4">
                       {/* Victim Avatar */}
-                      <div className="flex flex-col items-center">
-                        <Avatar className="h-20 w-20 grayscale opacity-80 border-2 border-gray-300 rounded-lg">
-                          <AvatarImage src={elimination.victim.photo || undefined} />
-                          <AvatarFallback className="bg-gray-200 text-gray-500 text-xl rounded-lg">
-                            {elimination.victim.nickname.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <p className="font-semibold mt-1 text-center">{elimination.victim.nickname}</p>
-                        <p className="text-xs text-muted-foreground">{elimination.victim.group}</p>
-                        <Badge variant="destructive" className="mt-1 text-xs">
-                          † RIP
-                        </Badge>
-                      </div>
+                      <Avatar className="h-20 w-20 grayscale opacity-80 border-2 border-gray-300 rounded-lg">
+                        <AvatarImage src={elimination.victim.photo || undefined} />
+                        <AvatarFallback className="bg-gray-200 text-gray-500 text-xl rounded-lg">
+                          {elimination.victim.nickname.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
 
-                      {/* Signature in the middle */}
-                      {elimination.victim.signature && (
-                        <div className="flex-grow">
-                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 h-24 flex items-center justify-center">
-                            <img 
-                              src={elimination.victim.signature} 
-                              alt={`Signatura de ${elimination.victim.nickname}`}
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
-                          <p className="text-xs text-center text-muted-foreground mt-1">
-                            {new Date(elimination.timestamp).toLocaleDateString('ca-ES', {
-                              day: 'numeric',
-                              month: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
+                      {/* Victim Info and Death Time */}
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-lg">{elimination.victim.nickname}</h3>
+                          <Badge variant="destructive" className="text-xs">
+                            † RIP
+                          </Badge>
                         </div>
-                      )}
-
-                      {/* Killer Avatar */}
-                      <div className="flex flex-col items-center">
-                        <Avatar className="h-20 w-20 border-2 border-green-400 rounded-lg">
-                          <AvatarImage src={elimination.eliminator.photo || undefined} />
-                          <AvatarFallback className="bg-green-100 text-green-700 text-xl rounded-lg">
-                            {elimination.eliminator.nickname.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <p className="font-semibold mt-1 text-center">{elimination.eliminator.nickname}</p>
-                        <p className="text-xs text-muted-foreground">{elimination.eliminator.group}</p>
-                        <Badge className="mt-1 text-xs bg-green-500 border-0">
-                          VIU
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Method - Only if interesting */}
-                    {elimination.method && elimination.method !== 'Eliminació estàndard' && (
-                      <div className="mt-3 text-center">
-                        <p className="text-sm italic text-muted-foreground">
-                          "{elimination.method}"
+                        <p className="text-sm text-muted-foreground">{elimination.victim.group}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(elimination.timestamp).toLocaleDateString('ca-ES', {
+                            day: 'numeric',
+                            month: 'long',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
-                    )}
+
+                      {/* Killer's Signature */}
+                      {elimination.killerSignature && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-2 w-32 h-20 flex items-center justify-center">
+                          <img 
+                            src={elimination.killerSignature} 
+                            alt="Signatura misteriosa"
+                            className="max-h-full max-w-full object-contain opacity-80"
+                            title="Qui serà l'assassí?"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Card>
               ))}
             </div>
           )}
 
-          {/* Fun footer message */}
+          {/* Mystery footer message */}
           {eliminations.length > 0 && (
             <Card className="bg-gray-100 border-gray-300">
               <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-600">
-                  🪦 Que les seves ànimes descansin en pau... fins al proper joc! 🪦
+                <p className="text-sm text-gray-600 italic">
+                  "Les signatures revelen pistes... qui serà el pròxim?" 🔍
                 </p>
               </CardContent>
             </Card>

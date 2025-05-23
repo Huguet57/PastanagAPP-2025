@@ -3,13 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, RefreshCw, Save, Send } from 'lucide-react';
+import { Loader2, RefreshCw, Send, Skull } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface EliminationFormProps {
   targetId: string;
@@ -25,11 +23,6 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    method: '',
-    location: '',
-    witnesses: ''
-  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -105,22 +98,11 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
     return canvas.toDataURL('image/png');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!hasSignature) {
       toast({
         title: 'Signatura requerida',
-        description: 'La víctima ha de signar per confirmar l\'eliminació',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    if (!formData.method.trim()) {
-      toast({
-        title: 'Mètode requerit',
-        description: 'Has d\'especificar com has eliminat la víctima',
+        description: 'Has de signar per confirmar l\'eliminació',
         variant: 'destructive'
       });
       return;
@@ -130,10 +112,6 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
 
     try {
       const signatureData = getSignatureData();
-      const witnessesArray = formData.witnesses
-        .split(',')
-        .map(w => w.trim())
-        .filter(w => w.length > 0);
 
       const response = await fetch('/api/eliminations', {
         method: 'POST',
@@ -142,10 +120,7 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
         },
         body: JSON.stringify({
           targetId,
-          method: formData.method,
-          location: formData.location,
-          witnesses: witnessesArray,
-          victimSignature: signatureData
+          killerSignature: signatureData
         })
       });
 
@@ -156,7 +131,7 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
 
       toast({
         title: 'Eliminació reportada!',
-        description: 'L\'eliminació s\'ha enviat per revisar als organitzadors'
+        description: 'Pendent de confirmació per la víctima o un organitzador'
       });
 
       router.push('/dashboard');
@@ -172,81 +147,37 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Victim Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Víctima a eliminar</CardTitle>
-          <CardDescription>Assegura't que és la teva víctima assignada</CardDescription>
+    <div className="space-y-6">
+      {/* Victim Card */}
+      <Card className="border-2 border-red-400 overflow-hidden">
+        <CardHeader className="bg-red-50">
+          <CardTitle className="flex items-center gap-2">
+            <Skull className="h-5 w-5 text-red-500" />
+            Confirmar Eliminació
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-4">
-            {targetPhoto && (
-              <img 
-                src={targetPhoto} 
-                alt={targetName}
-                className="w-20 h-20 rounded-full object-cover"
-              />
-            )}
-            <div>
-              <p className="text-xl font-semibold">{targetName}</p>
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center space-y-4">
+            <Avatar className="h-32 w-32 border-4 border-red-300 shadow-xl rounded-lg">
+              <AvatarImage src={targetPhoto || undefined} />
+              <AvatarFallback className="text-4xl bg-red-100 text-red-600 rounded-lg">
+                {targetName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{targetName}</p>
               <p className="text-muted-foreground">{targetGroup}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Elimination Details */}
+      {/* Killer Signature */}
       <Card>
         <CardHeader>
-          <CardTitle>Detalls de l'eliminació</CardTitle>
-          <CardDescription>Proporciona informació sobre com has eliminat la víctima</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="method">Mètode d'eliminació *</Label>
-            <Textarea
-              id="method"
-              placeholder="Descriu com has eliminat la víctima..."
-              value={formData.method}
-              onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-              required
-              className="min-h-[100px]"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">Localització (opcional)</Label>
-            <Input
-              id="location"
-              placeholder="On ha passat l'eliminació?"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="witnesses">Testimonis (opcional)</Label>
-            <Input
-              id="witnesses"
-              placeholder="Noms dels testimonis, separats per comes"
-              value={formData.witnesses}
-              onChange={(e) => setFormData({ ...formData, witnesses: e.target.value })}
-            />
-            <p className="text-sm text-muted-foreground">
-              Exemple: Joan Garcia, Maria López, Pere Puig
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Victim Signature */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Signatura de la víctima *</CardTitle>
+          <CardTitle>La teva signatura</CardTitle>
           <CardDescription>
-            La víctima ha de signar per confirmar l'eliminació. 
-            Aquesta signatura apareixerà al cementiri.
+            Signa per confirmar l'eliminació. La teva signatura apareixerà al cementiri com a pista.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -264,48 +195,40 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
                 onTouchEnd={stopDrawing}
               />
             </div>
-            <div className="flex justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={clearCanvas}
-                disabled={!hasSignature || loading}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Esborrar signatura
-              </Button>
-              {hasSignature && (
-                <span className="text-sm text-green-600 flex items-center">
-                  <Save className="mr-1 h-4 w-4" />
-                  Signatura guardada
-                </span>
-              )}
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={clearCanvas}
+              disabled={!hasSignature || loading}
+              className="w-full"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Esborrar signatura
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Warning */}
+      {/* Info Alert */}
       <Alert>
         <AlertDescription>
-          Un cop enviïs l'eliminació, els organitzadors la revisaran. 
+          Un cop reportis l'eliminació, la víctima o un organitzador hauran de confirmar-la. 
           Si s'aprova, se t'assignarà automàticament la següent víctima.
-          Les eliminacions falses poden comportar la teva eliminació del joc.
         </AlertDescription>
       </Alert>
 
       {/* Submit Button */}
       <Button 
-        type="submit" 
         size="lg" 
-        className="w-full"
-        disabled={loading || !hasSignature || !formData.method}
+        className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold"
+        disabled={loading || !hasSignature}
+        onClick={handleSubmit}
       >
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Enviant eliminació...
+            Reportant eliminació...
           </>
         ) : (
           <>
@@ -314,6 +237,6 @@ export function EliminationForm({ targetId, targetName, targetGroup, targetPhoto
           </>
         )}
       </Button>
-    </form>
+    </div>
   );
 } 

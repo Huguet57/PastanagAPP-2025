@@ -6,10 +6,7 @@ import { z } from 'zod';
 
 const createEliminationSchema = z.object({
   targetId: z.string(),
-  method: z.string().min(1),
-  location: z.string().optional(),
-  witnesses: z.array(z.string()).optional(),
-  victimSignature: z.string()
+  killerSignature: z.string()
 });
 
 export async function POST(request: NextRequest) {
@@ -70,23 +67,16 @@ export async function POST(request: NextRequest) {
         gameId: participant.gameId,
         eliminatorId: participant.id,
         victimId: validatedData.targetId,
-        method: validatedData.method,
-        location: validatedData.location || null,
-        witnesses: validatedData.witnesses ? JSON.stringify(validatedData.witnesses) : null,
-        confirmed: false
+        method: 'Eliminació estàndard', // Default method
+        killerSignature: validatedData.killerSignature,
+        confirmed: false // Pending confirmation
       }
-    });
-
-    // Update victim's signature
-    await prisma.participant.update({
-      where: { id: validatedData.targetId },
-      data: { signature: validatedData.victimSignature }
     });
 
     return NextResponse.json({
       success: true,
       eliminationId: elimination.id,
-      message: 'Eliminació reportada. Pendent de confirmació pels organitzadors.'
+      message: 'Eliminació reportada. Pendent de confirmació per la víctima o un organitzador.'
     });
 
   } catch (error) {
@@ -148,33 +138,49 @@ export async function GET(request: NextRequest) {
         ...(confirmed !== null ? { confirmed: confirmed === 'true' } : {})
       },
       include: {
-        eliminator: {
-          select: {
-            id: true,
-            nickname: true,
-            group: true,
-            photo: true
-          }
-        },
         victim: {
           select: {
             id: true,
             nickname: true,
             group: true,
             photo: true,
-            signature: true
+            userId: true
           }
-        }
+        },
+        // Include eliminator info only for pending eliminations and if user is organizer
+        ...(confirmed === 'false' && (user?.role === 'ADMIN' || user?.role === 'ORGANIZER') ? {
+          eliminator: {
+            select: {
+              id: true,
+              nickname: true,
+              group: true,
+              photo: true
+            }
+          }
+        } : {})
       },
       orderBy: {
         timestamp: 'desc'
       }
     });
 
-    return NextResponse.json(eliminations.map(e => ({
-      ...e,
-      witnesses: e.witnesses ? JSON.parse(e.witnesses) : []
-    })));
+    // Return simplified format for cemetery or full format for pending
+    if (confirmed === 'true') {
+      return NextResponse.json(eliminations.map(e => ({
+        id: e.id,
+        timestamp: e.timestamp,
+        killerSignature: e.killerSignature,
+        victim: e.victim
+      })));
+    } else {
+      return NextResponse.json(eliminations.map(e => ({
+        id: e.id,
+        timestamp: e.timestamp,
+        killerSignature: e.killerSignature,
+        victim: e.victim,
+        ...(e.eliminator ? { eliminator: e.eliminator } : {})
+      })));
+    }
 
   } catch (error) {
     console.error('Error fetching eliminations:', error);

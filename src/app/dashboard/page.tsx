@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Target, Trophy, Skull } from 'lucide-react';
+import { AlertCircle, Target, Trophy, Skull, Clock } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface GameInfo {
@@ -34,6 +34,10 @@ interface ParticipantInfo {
   eliminations: number;
   position: number;
   totalParticipants: number;
+  pendingEliminations?: number;
+  user?: {
+    role: string;
+  };
 }
 
 export default function DashboardPage() {
@@ -97,6 +101,18 @@ export default function DashboardPage() {
         const participant = await participantResponse.json();
         console.log('✅ Participant info received:', participant);
         setParticipantInfo(participant);
+        
+        // Check for pending eliminations if user is eliminated
+        if (participant.status === 'ELIMINATED') {
+          const pendingResponse = await fetch(`/api/eliminations?gameId=${game.id}&confirmed=false`);
+          if (pendingResponse.ok) {
+            const pendingData = await pendingResponse.json();
+            const userPending = pendingData.filter((e: any) => e.victim.userId === session.user.id);
+            if (userPending.length > 0) {
+              setParticipantInfo(prev => prev ? {...prev, pendingEliminations: userPending.length} : null);
+            }
+          }
+        }
       } catch (err) {
         console.error('💥 Dashboard fetch error:', err);
         setError(err instanceof Error ? err.message : 'Error carregant les dades');
@@ -148,6 +164,8 @@ export default function DashboardPage() {
 
   const isAlive = participantInfo.status === 'ALIVE';
   const hasWon = participantInfo.status === 'WINNER';
+  const hasPendingEliminations = participantInfo.pendingEliminations && participantInfo.pendingEliminations > 0;
+  const isOrganizer = participantInfo.user?.role === 'ADMIN' || participantInfo.user?.role === 'ORGANIZER';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
@@ -159,6 +177,32 @@ export default function DashboardPage() {
               Hola, {participantInfo.nickname}!
             </h1>
           </div>
+
+          {/* Pending Elimination Alert - if user has been eliminated */}
+          {hasPendingEliminations && (
+            <Card className="border-2 border-orange-400 bg-orange-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="font-semibold">T'han eliminat!</p>
+                      <p className="text-sm text-muted-foreground">
+                        Tens {participantInfo.pendingEliminations} eliminació pendent de confirmar
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => router.push('/game/pending-eliminations')}
+                    className="bg-orange-500 hover:bg-orange-600"
+                  >
+                    Confirmar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Target Card - More visual and fun */}
           {isAlive && participantInfo.target && (
@@ -184,10 +228,10 @@ export default function DashboardPage() {
                   <Button 
                     size="lg" 
                     onClick={() => router.push(`/game/elimination?targetId=${participantInfo.target?.id}`)}
-                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold"
+                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-6 text-lg shadow-lg hover:shadow-xl transition-all"
                   >
-                    <Skull className="mr-2 h-5 w-5" />
-                    Reportar Eliminació
+                    <Skull className="mr-2 h-6 w-6" />
+                    L'he eliminat!
                   </Button>
                 </div>
               </CardContent>
@@ -243,6 +287,19 @@ export default function DashboardPage() {
               <Skull className="mr-2 h-4 w-4" />
               Cementiri
             </Button>
+            
+            {/* Organizer Actions */}
+            {isOrganizer && (
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => router.push('/game/pending-eliminations')}
+                className="w-full border-blue-300 hover:bg-blue-50"
+              >
+                <Clock className="mr-2 h-4 w-4 text-blue-500" />
+                Gestionar Eliminacions Pendents
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -56,6 +56,11 @@ export async function GET(request: NextRequest) {
           where: {
             confirmed: true
           }
+        },
+        user: {
+          select: {
+            role: true
+          }
         }
       }
     });
@@ -124,7 +129,10 @@ export async function GET(request: NextRequest) {
       target: participant.target,
       eliminations: participant.eliminations.length,
       position: position,
-      totalParticipants: aliveParticipants
+      totalParticipants: aliveParticipants,
+      user: {
+        role: participant.user.role
+      }
     };
 
     console.log('✅ Returning participant data:', {
