@@ -52,10 +52,9 @@ export default function PendingEliminationsPage() {
       try {
         setLoading(true);
 
-        // Check user role
-        const userResponse = await fetch('/api/participants/me');
-        const userData = await userResponse.json();
-        setIsOrganizer(userData.user?.role === 'ADMIN' || userData.user?.role === 'ORGANIZER');
+        // Check if user is admin from session
+        const isAdmin = session.user.role === 'ADMIN';
+        setIsOrganizer(isAdmin);
 
         // Get active game
         const gameResponse = await fetch('/api/games/active');
@@ -71,12 +70,32 @@ export default function PendingEliminationsPage() {
         }
         const data = await eliminationsResponse.json();
         
-        // Filter to show only user's eliminations (if not organizer)
-        const filtered = isOrganizer ? data : data.filter((e: PendingElimination) => 
-          e.victim.id === userData.id || e.eliminator.id === userData.id
-        );
-        
-        setPendingEliminations(filtered);
+        // If admin, show all eliminations
+        if (isAdmin) {
+          setPendingEliminations(data);
+        } else {
+          // For regular users, try to get participant info
+          try {
+            const userResponse = await fetch(`/api/participants/me?gameId=${game.id}`);
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              const isOrganizerRole = userData.user?.role === 'ORGANIZER';
+              setIsOrganizer(isOrganizerRole);
+              
+              // Filter to show only user's eliminations
+              const filtered = isOrganizerRole ? data : data.filter((e: PendingElimination) => 
+                e.victim.id === userData.id || e.eliminator.id === userData.id
+              );
+              setPendingEliminations(filtered);
+            } else {
+              // If user is not a participant, show no eliminations
+              setPendingEliminations([]);
+            }
+          } catch (err) {
+            console.error('Error fetching participant info:', err);
+            setPendingEliminations([]);
+          }
+        }
       } catch (error) {
         console.error('Error:', error);
         toast({
@@ -90,7 +109,7 @@ export default function PendingEliminationsPage() {
     };
 
     fetchPendingEliminations();
-  }, [session, isOrganizer, toast]);
+  }, [session, toast]);
 
   const confirmElimination = async (eliminationId: string) => {
     setProcessingId(eliminationId);

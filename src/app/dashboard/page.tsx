@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Target, Trophy, Skull, Clock, LogOut, UserX } from 'lucide-react';
+import { AlertCircle, Target, Trophy, Skull, Clock, LogOut, UserX, Shield } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface GameInfo {
@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [participantInfo, setParticipantInfo] = useState<ParticipantInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notParticipant, setNotParticipant] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -62,9 +63,30 @@ export default function DashboardPage() {
       console.log('👤 Session user:', session?.user);
       console.log('🆔 Session user ID:', session?.user?.id);
       console.log('📧 Session user email:', session?.user?.email);
+      console.log('🛡️ Session user role:', session?.user?.role);
       
       if (!session?.user?.id) {
         console.log('🚫 No session user ID, skipping fetch');
+        return;
+      }
+
+      // Check if user is admin
+      if (session.user.role === 'ADMIN') {
+        console.log('🛡️ User is admin, showing admin dashboard');
+        setIsAdmin(true);
+        setLoading(false);
+        
+        // Still fetch active game info for admin
+        try {
+          const gamesResponse = await fetch('/api/games/active');
+          if (gamesResponse.ok) {
+            const game = await gamesResponse.json();
+            setGameInfo(game);
+          }
+        } catch (err) {
+          console.error('Error fetching game for admin:', err);
+        }
+        
         return;
       }
 
@@ -140,11 +162,102 @@ export default function DashboardPage() {
     loading,
     hasError: !!error,
     hasGameInfo: !!gameInfo,
-    hasParticipantInfo: !!participantInfo
+    hasParticipantInfo: !!participantInfo,
+    isAdmin
   });
 
   if (status === 'loading' || loading) {
     return <DashboardSkeleton />;
+  }
+
+  // Handle admin dashboard
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-50">
+        <div className="container mx-auto py-6 px-4 max-w-md">
+          <div className="space-y-6">
+            {/* Header with logout button */}
+            <div className="flex justify-end mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sortir
+              </Button>
+            </div>
+
+            {/* Admin Greeting */}
+            <div className="text-center mb-8">
+              <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center">
+                <Shield className="h-10 w-10 text-blue-600" />
+              </div>
+              <h1 className="text-4xl font-bold text-gray-800">
+                Panell d'Administració
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                {session?.user?.email}
+              </p>
+            </div>
+
+            {/* Game Info */}
+            {gameInfo && (
+              <Card className="border-2 border-blue-200">
+                <CardHeader className="bg-blue-50">
+                  <CardTitle>Joc Actiu</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <p className="font-semibold">{gameInfo.name}</p>
+                  <Badge className="mt-2">{gameInfo.status}</Badge>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Admin Actions */}
+            <div className="space-y-3">
+              <Button 
+                variant="default" 
+                size="lg"
+                onClick={() => router.push('/game/pending-eliminations')}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <Clock className="mr-2 h-4 w-4" />
+                Gestionar Eliminacions Pendents
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => router.push('/game/leaderboard')}
+                className="w-full border-blue-300 hover:bg-blue-50"
+              >
+                <Trophy className="mr-2 h-4 w-4 text-blue-500" />
+                Veure Rànquing
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => router.push('/game/cemetery')}
+                className="w-full border-gray-300 hover:bg-gray-50"
+              >
+                <Skull className="mr-2 h-4 w-4" />
+                Veure Cementiri
+              </Button>
+            </div>
+
+            {/* Info Alert */}
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertDescription>
+                Com a administrador, pots gestionar les eliminacions pendents i veure tota la informació del joc.
+              </AlertDescription>
+            </Alert>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Handle case where user is not a participant
